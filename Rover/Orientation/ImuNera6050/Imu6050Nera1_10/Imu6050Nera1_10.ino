@@ -80,7 +80,7 @@ MPU6050 mpu;
 // uncomment "OUTPUT_READABLE_QUATERNION" if you want to see the actual
 // quaternion components in a [w, x, y, z] format (not best for parsing
 // on a remote host such as Processing or something though)
-  #define OUTPUT_READABLE_ACCELATION_LINEAR_and_ANGLE
+ #define OUTPUT_READABLE_ACCELATION_LINEAR_and_ANGLE
 
 
 // uncomment "OUTPUT_READABLE_QUATERNION" if you want to see the actual
@@ -144,6 +144,10 @@ float euler[3];         // [psi, theta, phi]    Euler angle container
 float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
 float covariance[200];
 int cont = 0;
+float media = 0;
+int i = 0;
+float sigma = 0;
+float ax;
 //float q[4];             // [q0, q1, q2, q3]    yaw/pitch/roll to quaternion
 // packet structure for InvenSense teapot demo
 uint8_t teapotPacket[14] = { '$', 0x02, 0,0, 0,0, 0,0, 0,0, 0x00, 0x00, '\r', '\n' };
@@ -227,6 +231,7 @@ void setup() {
 
         // get expected DMP packet size for later comparison
         packetSize = mpu.dmpGetFIFOPacketSize();
+        mpu.setFullScaleAccelRange(2);
     } else {
         // ERROR!
         // 1 = initial memory load failed
@@ -343,11 +348,17 @@ void loop() {
             mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
             Serial.print("areal\t");
             Serial.print(aaReal.x);
+            ax = aaReal.x;
             Serial.print("\t");
             Serial.print(aaReal.y);
             Serial.print("\t");
             Serial.println(aaReal.z);
         #endif
+        
+                    
+                   // calcVar();
+        
+
 
         #ifdef OUTPUT_READABLE_WORLDACCEL
             // display initial world-frame acceleration, adjusted to remove gravity
@@ -364,7 +375,7 @@ void loop() {
             Serial.print("\t");
             Serial.println(aaWorld.z);
         #endif
-    
+        
         #ifdef OUTPUT_TEAPOT
             // display quaternion values in InvenSense Teapot demo format:
             teapotPacket[2] = fifoBuffer[0];
@@ -405,4 +416,36 @@ void loop() {
         blinkState = !blinkState;
         digitalWrite(LED_PIN, blinkState);
     }
+}
+
+void calcVar()
+{
+ media = media + ax;
+        covariance[i] = ax;            
+        //cont += 1;
+        i += 1; 
+        if (i == 200)
+        {
+          media = media/200;
+          for(i=0;i<200;i++)
+          {
+            Serial.print("SignaPast:  ");
+            Serial.print(sigma);
+            
+            sigma = sigma + (covariance[i] - media)*(covariance[i] - media);
+            
+            Serial.print("    valore i-esimo:  ");
+            Serial.println(covariance[i]);
+            Serial.print("  Somma passo ");
+            Serial.println(i);
+            Serial.print("esimo :  ");
+            Serial.println(sigma);
+          }
+          sigma = sqrt(sigma/199);
+          
+          Serial.println("%----  Media-  ---%");
+          Serial.println(media);
+          Serial.println("%-----  Cov  -----%  ");
+          Serial.println(sigma);
+        } 
 }
