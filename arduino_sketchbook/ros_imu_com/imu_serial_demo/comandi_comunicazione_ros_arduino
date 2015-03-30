@@ -1,0 +1,15 @@
+1. [Collegare arduino]
+2. roscore
+3. rosrun rosserial_python serial_node.py /dev/ttyACM0
+4. cd catkin_ws/
+5. source devel/setup.bash
+6. rosrun arduino_nav_bridge arduino_nav_bridge_node 
+
+OPPURE
+
+1. [Collegare arduino]
+2. roslaunch arduino_nav_bridge arduino_n_bridge.launch
+
+
+Per visualizzare i risultati:
+rostopic echo imu_data

@@ -1,0 +1,8 @@
+prefix=/home/mrdeeppurple/catkin_ws/install
+
+Name: arduino_nav_bridge
+Description: Description of arduino_nav_bridge
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/mrdeeppurple/catkin_ws/install/lib 
+Requires: 
