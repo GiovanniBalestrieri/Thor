@@ -11,9 +11,14 @@
 #define ACCELERATION_MSG 2
 
 
+#define POSE_MSG 0
+#define TWIST_MSG 1
+
 void set_covariance();
-void send(int rec);
+void sendImu(int rec);
 void quat_callback(const geometry_msgs::Quaternion q);
 void vel_callback(const geometry_msgs::Vector3 s);
 void acc_callback(const geometry_msgs::Vector3 a);
-void send_odometry();
+void pose_callback(const geometry_msgs::Pose p);
+void twist_callback(const geometry_msgs::Twist t);
+void sendOdometry(int type);

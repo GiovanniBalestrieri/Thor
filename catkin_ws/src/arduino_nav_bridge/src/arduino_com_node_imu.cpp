@@ -1,6 +1,7 @@
 #include "arduino_com_node_imu.h"
 
-int send_status[] = {0, 0, 0};
+int send_status_imu[] = {0, 0, 0};
+int send_status_odom[] = {0, 0};
 
 sensor_msgs::Imu imu_msg;
 nav_msgs::Odometry odom;
@@ -20,6 +21,10 @@ int main(int argc, char **argv){
 	ros::Subscriber quatsub = n.subscribe("quaternion", 1000, quat_callback);
 	ros::Subscriber velsub = n.subscribe("ang_vel", 1000, vel_callback);
 	ros::Subscriber accsub = n.subscribe("lin_accel", 1000, acc_callback);
+	
+	ros::Subscriber posesub = n.subscribe("odom_pose", 1000, pose_callback);
+	ros::Subscriber twistsub = n.subscribe("odom_twist", 1000, twist_callback);
+	
 	imu_pub = n.advertise<sensor_msgs::Imu>("imu_data", 1000);
 	odom_pub = n.advertise<nav_msgs::Odometry>("pr2_base_odometry/odom", 1000);
 	//odom_pub = n.advertise<nav_msgs::Odometry>("odom", 1000);
@@ -137,21 +142,19 @@ void set_covariance(){
 	odom.twist.covariance[35] = 0.0;
 }
 
-void send(int rec){
-	send_status[rec] = 1;
-	if(send_status[0] == 1 && send_status[1] == 1 && send_status[2] == 1){
+void sendImu(int rec){
+	send_status_imu[rec] = 1;
+	if(send_status_imu[0] == 1 && send_status_imu[1] == 1 && send_status_imu[2] == 1){
 
 		/**** INVIO MESSAGGIO IMU ****/
 		imu_msg.header.stamp = ros::Time::now();
 		imu_msg.header.frame_id = "imu_link";
 		imu_pub.publish(imu_msg);
-		/**** INVIO MESSAGGIO ODOMETRY ****/
-		send_odometry();
-		
+
 		/**** RESET STATO DI RICEZIONE DATI ****/
-		send_status[0] = 0;
-		send_status[1] = 0;
-		send_status[2] = 0;
+		send_status_imu[0] = 0;
+		send_status_imu[1] = 0;
+		send_status_imu[2] = 0;
 	}
 }
 
@@ -161,7 +164,7 @@ void quat_callback(const geometry_msgs::Quaternion q){
 	imu_msg.orientation.z = q.z;
 	imu_msg.orientation.w = q.w;
 	
-	send(QUATERNION_MSG);
+	sendImu(QUATERNION_MSG);
 }
 
 void vel_callback(const geometry_msgs::Vector3 s){
@@ -169,7 +172,7 @@ void vel_callback(const geometry_msgs::Vector3 s){
 	imu_msg.angular_velocity.y = s.y;
 	imu_msg.angular_velocity.z = s.z;
 
-	send(VELOCITY_MSG);
+	sendImu(VELOCITY_MSG);
 }
 
 void acc_callback(const geometry_msgs::Vector3 a){
@@ -177,29 +180,42 @@ void acc_callback(const geometry_msgs::Vector3 a){
 	imu_msg.linear_acceleration.y = a.y;
 	imu_msg.linear_acceleration.z = a.z;
 	
-	send(ACCELERATION_MSG);
+	sendImu(ACCELERATION_MSG);
 }
 
-void send_odometry(){
+void pose_callback(const geometry_msgs::Pose p){
+	odom.pose.pose.position.x = p.position.x;
+	odom.pose.pose.position.y = p.position.y;
+	odom.pose.pose.position.z = p.position.z;
+	
+	odom.pose.pose.orientation.x = p.orientation.x;
+	odom.pose.pose.orientation.y = p.orientation.y;
+	odom.pose.pose.orientation.z = p.orientation.z;
+	odom.pose.pose.orientation.w = p.orientation.w;
+	
+	
+	sendOdometry(POSE_MSG);
+}
 
-	odom.header = imu_msg.header;
-	odom.pose.pose.position.x = 0;
-	odom.pose.pose.position.y = 0;
-	odom.pose.pose.position.z = 0;
+void twist_callback(const geometry_msgs::Twist t){
+	odom.twist.twist.linear.x = t.linear.x;
+	odom.twist.twist.linear.y = t.linear.y;
+	odom.twist.twist.linear.z = t.linear.z;
 	
-	odom.pose.pose.orientation.x = 0;
-	odom.pose.pose.orientation.y = 0;
-	odom.pose.pose.orientation.z = 0;
-	odom.pose.pose.orientation.w = 0;
+	odom.twist.twist.angular.x = t.angular.x;
+	odom.twist.twist.angular.y = t.angular.x;
+	odom.twist.twist.angular.z = t.angular.x;
 	
-	
-	odom.twist.twist.linear.x = 0;
-	odom.twist.twist.linear.y = 0;
-	odom.twist.twist.linear.z = 0;
-	
-	odom.twist.twist.angular.x = 0;
-	odom.twist.twist.angular.y = 0;
-	odom.twist.twist.angular.z = 0;
-	
-	odom_pub.publish(odom);
+	sendOdometry(TWIST_MSG);
+}
+
+void sendOdometry(int type){
+	send_status_odom[type] = 1;
+	if(send_status_odom[0] == 1 && send_status_odom[1] == 1){
+		odom.header = imu_msg.header;
+		odom_pub.publish(odom);
+		send_status_odom[0] = 0;
+		send_status_odom[1] = 0;
+
+	}
 }
