@@ -8,11 +8,11 @@
  *                    - 'a' -> TestMotors()
  *                    - 'i' -> Check ISR freq [Hz]
  *                    - 'p' -> Toggles generalPrint
- *                    - 'o' -> Toogles printOdom
+ *                    - 'o' -> Toggles printOdom
  *                    - 's' -> Toggles printMotorsSx
- *                    - 'd' -> Toogles printMotorsDx
- *                    - 'w' -> Toogles printAngVel
- *                    - 'e' -> Toogles printEncoder
+ *                    - 'd' -> Toggles printMotorsDx
+ *                    - 'w' -> Toggles printAngVel
+ *                    - 'e' -> Toggles printEncoder
  *
  **/
 
