@@ -1,4 +1,4 @@
- ♦/**********************************************************************
+ /**********************************************************************
  *             Arduino Uno & sabertooth & Motors & PID & Odometry     *
  *                        by Thor Group, 2015                         *
  **********************************************************************/
@@ -46,7 +46,7 @@ Servo motorDx, motorSx;
 boolean generalPrint = true;
 
 // Infos
-boolean printInfo = true;
+boolean printTimerInfo = true;
 
 // Odometry
 boolean printOdom = false;
@@ -86,9 +86,13 @@ int riferimentoDx = 0;
  **/
  
 // Timing
-unsigned long timerPid, timerPid_m1;
-unsigned long timerMisure, timerMisure_m1
-unsigned long timerSabertooth, timerSabertooth_m1;
+volatile unsigned long int timerPid;
+volatile unsigned long int timerMisure;
+volatile unsigned long int timerSabertooth;
+volatile unsigned long int timerISR;
+
+// Input Motors
+volatile float uSx = 0, uDx = 0;
 
 //Measures interrupt freq -> servono?
 volatile long bla;
@@ -115,9 +119,6 @@ float integrale2 = 0;
 float erroreDx = 0;
 float errore_old2 = 0;
 int Pwm_Static_Friction2 = 0;
-
-// Input Motors
-float uSx = 0, uDx = 0;
 
 //variabili per encoder motore 1 
 volatile long int MSencoderPos = 0;
@@ -224,7 +225,8 @@ void loop()
       // resets ISR counter
       contIsr=0;
     }
-    sabertooth(uDx,uSx);
+    // Now runs in ISR after pid and misure
+    //sabertooth(uDx,uSx);
   }
   handleOverflow();  
 }
@@ -234,9 +236,14 @@ void loop()
  **/
 ISR(TIMER2_COMPA_vect)
 {
+  timerISR = micros();
+  
   misure();
   pid();
+  sabertooth(uDx,uSx);
   contIsr++;
+  
+  timerISR = micros() - timerISR;
 }
 
 void serialRoutine()
@@ -251,9 +258,9 @@ void serialRoutine()
    }
    else if (t == 'i') 
    {
-     printInfo = !printInfo;
+     printTimerInfo = !printTimerInfo;
      Serial.print(" Toogles Information verbosity: ");
-     Serial.println(printInfo);
+     Serial.println(printTimerInfo);
    }
    else if (t == 'p') 
    {
@@ -292,11 +299,13 @@ void info()
 {
  if (generalPrint)
  {
-  if (printInfo)
+  if (printTimerInfo)
   {
      Serial.println();
-     Serial.print(" ISR: ");
+     Serial.print(" ISR Freq: ");
      Serial.print(contIsr*2);
+     Serial.print(" ISR exec time: ");
+     Serial.println(timerISR);
      Serial.print(" Pid exec time: ");
      Serial.print(timerPid);
      Serial.print(" Misure exec time: ");
@@ -417,7 +426,7 @@ void misure()
   xAss = xAss + velXAss*TCAMP/(1000000);
   yAss = yAss + velYAss*TCAMP/(1000000);
   
-  timerMisure = micros() - timerMisure();
+  timerMisure = micros() - timerMisure;
 }
 
 void odometry()
