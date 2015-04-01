@@ -18,6 +18,7 @@
  *                    - 'd' -> Toogles printMotorsDx
  *                    - 'w' -> Toogles printAngVel
  *                    - 'e' -> Toogles printEncoder
+ *                    - 'h' -> Toogles printPidVals
  *
  **/
 
@@ -58,6 +59,7 @@ boolean printAngVel= false;
 boolean printLinVel= false;
 boolean printEncoder= false;
 boolean printOrientation= false;
+boolean printPidVals= false;
 
 /**
  ** Setpoint References
@@ -71,7 +73,7 @@ int riferimentoDx = 0;
  **/
  
 #define Ts 2000 //us
-#define Kp_1 0.8
+#define Kp_1 0.0 //0.8
 #define Ki_1 0.0
 #define Kd_1 0.0
 #define ControlDeadzone_1 5 //deadzone for u, the control variable
@@ -103,52 +105,56 @@ volatile long isra,isrb;
 #define pinEncoderBS 4
 #define pinEncoderBD 5
 
-#define NUMEROIMPULSI 2078.4
+#define NUMEROIMPULSI 48.0
 #define DISTRUOTE 0.59
 #define RAGGIORUOTA 0.13
 #define KRAPP 1
 #define TCAMP 50000
 
-int u1 = 0; //control variable
-float integrale1 = 0;
-float erroreSx = 0;
-float errore_old1 = 0;
+volatile int u1 = 0; //control variable
+volatile float integraleSx = 0;
+volatile float derivativoSx = 0;
+volatile float proporzionaleSx = 0;
+volatile float erroreSx = 0;
+volatile float errore_old1 = 0;
 int Pwm_Static_Friction1 = 0;
 //variabili pid 2
-int u2 = 0; //control variable
-float integrale2 = 0;
-float erroreDx = 0;
-float errore_old2 = 0;
+volatile int u2 = 0; //control variable
+volatile float integraleDx = 0;
+volatile float derivativoDx = 0;
+volatile float proporzionaleDx = 0;
+volatile float erroreDx = 0;
+volatile float errore_old2 = 0;
 int Pwm_Static_Friction2 = 0;
 
 //variabili per encoder motore 1 
 volatile long int MSencoderPos = 0;
 volatile long int MStOld = -30000;
 volatile long int MSperiodAtt = 1;
-long int M1deltaPos = 0;
-long int M1oldPos = 0;
+volatile long int M1deltaPos = 0;
+volatile long int M1oldPos = 0;
 char M1verso = 1;
-float m1VelAng = 0;
-float M1velLin = 0;
+volatile float m1VelAng = 0;
+volatile float M1velLin = 0;
 //variabili per encoder motore 2
 volatile long int MDencoderPos = 0;
 volatile long int MDtOld = 0;
 volatile long int MDperiodAtt = 0;
-long int M2deltaPos = 0;
-long int M2oldPos = 0;
+volatile long int M2deltaPos = 0;
+volatile long int M2oldPos = 0;
 char M2verso = 1;
-float m2VelAng = 0;
-float M2velLin = 0;
+volatile float m2VelAng = 0;
+volatile float M2velLin = 0;
 // Filter costante
 float alpha = 1.0;//0.08;
 //variabili rover
-float velLinAss = 0;
-float omegaZAss = 0;
-float velXAss = 0;
-float velYAss = 0;
-float xAss = 0;
-float yAss = 0;
-float thetaZAss = 0;
+volatile float velLinAss = 0;
+volatile float omegaZAss = 0;
+volatile float velXAss = 0;
+volatile float velYAss = 0;
+volatile float xAss = 0;
+volatile float yAss = 0;
+volatile float thetaZAss = 0;
 //variabili controllore
 long tOld = 0;
 int count = 0;
@@ -183,8 +189,9 @@ void setup()
   TCCR2B = 0;// same for TCCR1B
   
   // set compare match register for 200 Hz increments
-  OCR2A = 77;// = (16*10^6) / (200*1024) - 1 -> 200 Hz
-  //OCR2A=193; //16*10^6/(80Hz*1024) - 1 = 193 -> 80 Hz 
+  //OCR2A = 77;// = (16*10^6) / (200*1024) - 1 -> 200 Hz
+  OCR2A=193; //16*10^6/(80Hz*1024) - 1 = 193 -> 80 Hz 
+  //OCR2A=1561; //16*10^6/(80Hz*1024) - 1 = 193 -> 80 Hz 
   //OCR2A=780; //16*10^6/(20Hz*1024) - 1 = 780 -> 20 Hz 
   //OCR2A=50; //16*10^6/(308Hz*1024) - 1 = 50 -> 308 Hz 
   
@@ -202,6 +209,7 @@ void setup()
   attachInterrupt(1, MDencoder, RISING);
   motorDx.attach(10, 1000, 2000); // SX ??
   motorSx.attach(11, 1000, 2000); // DX ?? 
+  //pinMode(9, OUTPUT);
   firstTime = micros();
 }
 
@@ -230,6 +238,7 @@ void loop()
     //sabertooth(uDx,uSx);
   }
   handleOverflow();  
+  //analogWrite(9, 110);
 }
 
 /**
@@ -239,9 +248,12 @@ ISR(TIMER2_COMPA_vect)
 {
   timerISR = micros();
   
-  misure();
-  pid();
-  sabertooth(uDx,uSx);
+misure();
+pid();
+//analogWrite(11, 110);
+//motorSx.write(110);
+//sabertooth(uDx,uSx);
+ sabertooth(90,90);
   contIsr++;
   
   timerISR = micros() - timerISR;
@@ -293,6 +305,11 @@ void serialRoutine()
      Serial.println(" Toggles printEncoder ");
      printEncoder = !printEncoder;
    }
+   else if (t == 'h') 
+   {
+     Serial.println(" Toggles printPidVals ");
+     printPidVals = !printPidVals;
+   }
  } 
 }
 
@@ -306,7 +323,7 @@ void info()
      Serial.print(" ISR Freq: ");
      Serial.print(contIsr*2);
      Serial.print(" ISR exec time: ");
-     Serial.println(timerISR);
+     Serial.print(timerISR);
      Serial.print(" pid DT: ");
      Serial.println(dtPid);
 //     Serial.print(" Pid exec time: ");
@@ -342,57 +359,28 @@ void pid()   // Non modificato uK -- siamo in una  ISR -> change vars to volatil
  dtPid = deltaPid;
  timerPid = micros();
  
-  // pid M1
+  // pid M148
 //  if(micros()-MStOld >= 30000){
 //    m1VelAng = 0;
 //    Serial.println("start");
 //  }else{
-    m1VelAng = 2.0*PI*1000000.0/(2048.0*MSperiodAtt);
+//    m1VelAng = 2.0*PI*1000000.0/(48.0*MSperiodAtt);
  // }
-  erroreSx = riferimentoSx - (m1VelAng); //*(52.0/14.0)
-  integrale1 = integrale1 + (Ki_1*TCAMP*erroreSx)/1000.0;
-  u1 = int(Kp_1*erroreSx) + (int) integrale1 + int(1000000*Kd_1*(erroreSx-errore_old1)/TCAMP);
+  erroreSx = riferimentoSx - m1VelAng; //*(52.0/14.0)
+  integraleSx = integraleSx + (Ki_1*dtPid*erroreSx)/1000.0;
+  proporzionaleSx = Kp_1*erroreSx;
+  derivativoSx = 1000000*Kd_1*(erroreSx-errore_old1)/dtPid;
+  u1 = int(proporzionaleSx) + (int) integraleSx + int(derivativoSx);
   //u1 = 0;
   errore_old1 = erroreSx;
   // pid M2
-  erroreDx = riferimentoDx;//- int(m2VelAng)); //*(52.0/18.0)
-  integrale2 = integrale2 + (Ki_2*TCAMP*erroreDx)/1000;
-  u2 = int(Kp_2*erroreDx) + int(integrale2) + int(1000000*Kd_2*(erroreDx-errore_old2)/TCAMP);
+  erroreDx = riferimentoDx - m2VelAng; //*(52.0/18.0)
+  integraleDx = integraleDx + (Ki_2*dtPid*erroreDx)/1000;
+  proporzionaleDx =  Kp_2*erroreDx;
+  derivativoDx = 1000000*Kd_2*(erroreDx-errore_old2)/dtPid;
+  u2 = int(proporzionaleDx) + int(integraleDx) + int(derivativoDx);
   //u2 = 0;
   errore_old2 = erroreDx;
-  
-  /* DEBUG NON CONSENTITO SIAMO IN UNA ISR niente serialPrint
-  
-  if (printMotorsSx)
-  {
-    Serial.print("IntegraleSx:  ");
-    Serial.println(integrale1);
-  }
-  
-  if (printMotorsDx)
-  {
-    Serial.print("IntegraleDx:  ");
-    Serial.println(integrale2);
-  }
-  
-  if (printPidVal)
-  {
-    if (printMotorsDx)
-    {
-      Serial.print("erroreDx = ");
-      Serial.print(erroreDx);
-      Serial.print("  velAng DX = ");
-      Serial.print(m2VelAng);
-    }    
-    if (printMotorsSx)
-    {
-      Serial.print("erroreSx = ");
-      Serial.print(erroreSx);
-      Serial.print("  velAng SX = ");
-      Serial.println(m1VelAng);
-    }
-  }
-  */
   
   uSx = u1;
   uDx = u2;
@@ -420,8 +408,8 @@ void misure()
   M1oldPos = MSencoderPos;
   M2deltaPos = (MDencoderPos - M2oldPos);
   M2oldPos = MDencoderPos;
-  m1VelAng = (1-alpha)*m1VelAng + alpha*(2*PI*M1deltaPos)/(NUMEROIMPULSI)*1000000/TCAMP;
-  m2VelAng = (1-alpha)*m2VelAng + alpha*(2*PI*M2deltaPos)/(NUMEROIMPULSI)*1000000/TCAMP;;
+  m1VelAng = (1-alpha)*m1VelAng + alpha*(2*PI*M1deltaPos)/(NUMEROIMPULSI)*1000000/dtPid;
+  m2VelAng = (1-alpha)*m2VelAng + alpha*(2*PI*M2deltaPos)/(NUMEROIMPULSI)*1000000/dtPid;
   M1velLin = m1VelAng*RAGGIORUOTA;
   M2velLin = m2VelAng*RAGGIORUOTA;
   velLinAss = (M1velLin+M2velLin)/2;
@@ -439,14 +427,9 @@ void odometry()
 {  
   if (printOdom && generalPrint)
   {
-    if(printError)
-    {
-      Serial.print("ErrSX= ");
-      Serial.println(erroreSx);  
-    }    
     if (printOrientation)
     {
-      Serial.print("thetaZAss: ");
+      Serial.print("  thetaZAss: ");
       Serial.print(thetaZAss);
       Serial.print(" xAss: ");
       Serial.print(xAss);
@@ -455,6 +438,7 @@ void odometry()
     }
     if (printLinVel)
     {
+      Serial.println();
       Serial.print(" velYAss: ");
       Serial.print(velYAss);
       Serial.print(" velXAss: ");
@@ -463,20 +447,25 @@ void odometry()
       Serial.print(M1velLin);
       Serial.print(" M2velLin: ");
       Serial.print(M2velLin);
+      Serial.println();
     }
     if (printAngVel)
     {      
+      Serial.println();
       Serial.print(" m1VelAng: ");
       Serial.print(m1VelAng);
       Serial.print(" m2VelAng: ");
       Serial.print(m2VelAng);
+      Serial.println();
     }
     if (printEncoder)
     {
+      Serial.println();
       Serial.print(" M1pos: ");
       Serial.print(MSencoderPos);
       Serial.print(" M2pos: ");
       Serial.println(MDencoderPos);
+      Serial.println();
     }  
     if (printMotorsSx)
     {
@@ -489,6 +478,37 @@ void odometry()
       Serial.println();  
       Serial.print("  Motor Dx:   ");
       Serial.println(uDx);
+    } 
+    if (printPidVals)
+    {      
+      //if(printError)
+      //{
+      //}
+        Serial.println();
+        Serial.print("ErrSX= ");
+        Serial.print(erroreSx); 
+        Serial.print(" uSx= ");
+        Serial.print(u1);         
+        Serial.print(" intSx= ");
+        Serial.print(integraleSx); 
+        Serial.print(" dervSx= ");
+        Serial.print(derivativoSx);
+        Serial.print(" propSx= ");
+        Serial.print(proporzionaleSx);
+        
+        Serial.println();
+        Serial.print("   ErrDX= ");
+        Serial.print(erroreDx);  
+        Serial.print(" uDx= ");
+        Serial.print(u2); 
+        Serial.print(" intSx= ");
+        Serial.print(integraleDx); 
+        Serial.print(" dervSx= ");
+        Serial.print(derivativoDx);
+        Serial.print(" propSx= ");
+        Serial.print(proporzionaleDx);
+        
+        Serial.println();
     } 
   }
 }
