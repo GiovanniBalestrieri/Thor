@@ -1,3 +1,36 @@
+/**
+ *  Features:
+ *  
+ *  - Motors Interface
+ *  - Angular Velocity from encoders
+ *  - PID Motors control
+ *  - Serial Routine, Press:
+ *                    - 'a' -> TestMotors()
+ *                    - 'i' -> Check ISR freq [Hz]
+ *                    - 'p' -> Toggles generalPrint
+ *                    - 'o' -> Toogles printOdom
+ *                    - 's' -> Toggles printMotorsSx
+ *                    - 'd' -> Toogles printMotorsDx
+ *                    - 'w' -> Toogles printAngVel
+ *                    - 'e' -> Toogles printEncoder
+ *
+ **/
+
+/**********************************************************************/
+/**************************** Wiring: *********************************/
+/**********************************************************************/
+/*
+ * Pin A0 -> AttoPilot V
+ * Pin A1 -> AttoPilot I -> doesn't work
+ * Pin 9 -> Sabertooth S1
+ * Pin 10 -> Sabertooth S2
+ * Pin 2 -> encoder M1 ( SX ) motorSx 
+ * Pin 3 -> encoder M2 ( DX ) motorDx
+ * GND -> Sabertooth 0V
+ * GND -> AttoPilot GND 
+ * VIN <- Sabertooth 5V (OPTIONAL, Sabertooth powers Arduino)
+*/
+
 TODO:
 
 Modificare la funzione pid() - Maggiori info nel commit
