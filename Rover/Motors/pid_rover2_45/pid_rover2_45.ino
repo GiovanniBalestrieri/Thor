@@ -12,14 +12,14 @@ Arduino GND -> AttoPilot GND
 Arduino VIN -> Sabertooth 5V (OPTIONAL, Sabertooth powers Arduino)
 */
 
-boolean printOdom = false;//true;
+boolean printOdom = false;
 boolean printError = true;
-boolean printPidVal= false;//true;
-boolean printMotorsDx = false;//true;
-boolean printMotorsSx = false;//true;
+boolean printPidVal= false;
+boolean printMotorsDx = false;
+boolean printMotorsSx = false;
 boolean printAngVel= false;
 boolean printLinVel= false;
-boolean printEncoder= false;//true;
+boolean printEncoder= false;
 boolean printOrientation= false;
 
 int riferimentoSx = 100; // [-470 ; 470]  (rad/s)
@@ -102,23 +102,15 @@ long firstTime;
 long timeToMove = 5000000L;
 
 #include <Servo.h>
-// Sabertooth control pins
-// Sabertooth accepts servo pulses from 1000 us to 2000 us.
-// We need to specify the pulse widths in attach(). 0 degrees will be full reverse, 180 degrees will be
-// full forward. Sending a servo command of 90 will stop the motor. Whether the servo pulses control
-// the motors individually or control throttle and turning depends on your mixed mode setting.
+
 Servo motorDx, motorSx;
-int VRaw; //This will store our raw ADC data
+int VRaw; 
 int IRaw;
-float VFinal; //This will store the converted data
+float VFinal; 
 float IFinal;
 
 void setup()
-{
-  // map from human [-90;90] to sabertooth [0;180]
- // riferimentoSx = riferimentoSx; 
-//  riferimentoDx = riferimentoDx;
-  
+{ 
   // Valore per superare attrito statico
   Pwm_Static_Friction1 = 0;// trovato tramite test motor, a 98 inizia a muoversi
   Pwm_Static_Friction2 = 0;//da trovare;
@@ -129,11 +121,8 @@ void setup()
   // Define encoder pin Interrupt
   attachInterrupt(0, MSencVel, RISING);
   attachInterrupt(1, MDencoder, RISING);
-  // Notice these attach() calls. The second and third arguments are important.
-  // With a single argument, the range is 44 to 141 degrees, with 92 being stopped.
-  // With all three arguments, we can use 0 to 180 degrees, with 90 being stopped.
-  motorDx.attach(10, 1000, 2000); // SX
-  motorSx.attach(11, 1000, 2000); // DX
+  motorDx.attach(10, 1000, 2000); // SX ??
+  motorSx.attach(11, 1000, 2000); // DX ?? 
   firstTime = micros();
 }
 void loop()
@@ -169,7 +158,6 @@ void loop()
     }
     sabertooth(uDx,uSx);
   }
-  //attopilot();
   handleOverflow();  
 }
 
@@ -201,33 +189,6 @@ void handleOverflow()
     M2oldPos = -M2deltaPos;
     //Serial.println("overflow ");
   }
-}
-
-void testMotor()
-{
- float v_m1,v_m2;
- int soglia1=0; // partito
- int soglia2=0; // stop
- boolean cond;
- for (int i = 90; i<255;i++)
- {
-   sabertooth(i,i);
-//   motorSx.write(i);
-   delay(100);
-   if (m1VelAng > 0)
-   {  
-     cond=true;
-     soglia1 = i;
-   }
-   //v_m1 = m1VelAng
-    misure();
-   odometry();
-   Serial.print("  u1 =");      
-   Serial.println(i);   
- }
- 
- Serial.print(" Soglia");
- Serial.println(soglia1);
 }
 
 void pid()
@@ -388,36 +349,45 @@ void odometry()
     }
   }
 }
+
 void attoPilot()
 {
-//Measurement
-VRaw = analogRead(A0);
-IRaw = analogRead(A1); // doesn't work ...
-//Conversion
-VFinal = VRaw/49.44; //45 Amp board
-IFinal = IRaw/14.9; //45 Amp board
-Serial.print(VFinal);
-Serial.println(" Volts");
-Serial.print(IFinal);
-Serial.println(" Amps");
-Serial.println("encoder");
-delay(200);
+  //Measurement
+  VRaw = analogRead(A0);
+  IRaw = analogRead(A1); // doesn't work ...
+  //Conversion
+  VFinal = VRaw/49.44; //45 Amp board
+  IFinal = IRaw/14.9; //45 Amp board
+  Serial.print(VFinal);
+  Serial.println(" Volts");
+  Serial.print(IFinal);
+  Serial.println(" Amps");
+  Serial.println("encoder");
+  delay(200);
 }
 
+/** 
+ ** Sets max and min pwm values and sends control inputs 
+ ** to motors. 
+ ** 
+ ** Called: from main loop
+ ** Exec Time: TODO!
+ **/
 void sabertooth(float uDx, float uSx)
-{
-  //Serial.print("   Motor Dx: ");
-  //Serial.print(uDx);
+{  
   if (uSx >= 190)
    uSx = 190;
   else if (uSx < 0)
    uSx = 0;
    
-   
   if (uDx >= 190)
    uDx = 190;
   else if (uDx < 0)
    uDx = 0;
+   
+  motorDx.write(int(uDx));
+  motorSx.write(int(uSx)); 
+   
   Serial.println();
   if (printMotorsSx)
   {
@@ -428,9 +398,7 @@ void sabertooth(float uDx, float uSx)
   {
     Serial.print("  Motor Dx:   ");
     Serial.println(uDx);
-  }
-  motorDx.write(int(uDx));
-  motorSx.write(int(uSx));  
+  } 
 }
 
 void MSencoder() /////////////////////////////////////////////////////////////Verso cambiato
@@ -458,7 +426,34 @@ void MDencoder()
 
 
 
-void MSencVel(){
+void MSencVel()
+{
    MSperiodAtt = micros()-MStOld;
    MStOld = micros(); 
+}
+
+
+void testMotor()
+{
+ float v_m1,v_m2;
+ int soglia1=0; // partito
+ int soglia2=0; // stop
+ boolean cond;
+ for (int i = 90; i<255;i++)
+ {
+   sabertooth(i,i);
+   delay(100);
+   if (m1VelAng > 0)
+   {  
+     cond=true;
+     soglia1 = i;
+   }
+   misure();
+   odometry();
+   Serial.print("  u1 =");      
+   Serial.println(i);   
+ }
+ 
+ Serial.print(" Soglia");
+ Serial.println(soglia1);
 }
