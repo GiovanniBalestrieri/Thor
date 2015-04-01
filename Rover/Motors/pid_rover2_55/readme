@@ -1,0 +1,12 @@
+TODO:
+
+Modificare la funzione pid() - Maggiori info nel commit
+
+Nel calcolo della componente integrale e derivativa del pid compare il vecchio TCAMP. Ora il calc del controllo è dettato dalla frequenza del timer, fissata a 200Hz. Il delta T dovrebbe essere calcolato a run time con micros().
+
+Impostazioni del Timer: 
+Ci sono dei settings commentati nel setup per impostarlo a 20Hz,80Hz,200Hz e 800Hz.
+
+Facite Vobis
+Uk
+
