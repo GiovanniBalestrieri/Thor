@@ -206,15 +206,16 @@ void setup()
   
   // Define encoder pin Interrupt
   attachInterrupt(0, MSencVel, RISING);
-  attachInterrupt(1, MDencoder, RISING);
-  motorDx.attach(10, 1000, 2000); // SX ??
-  motorSx.attach(11, 1000, 2000); // DX ?? 
+  attachInterrupt(1, MDencVel, RISING);
+  motorDx.attach(10, 1000, 2000); // DX 
+  motorSx.attach(11, 1000, 2000); // SX  
   //pinMode(9, OUTPUT);
   firstTime = micros();
 }
 
 void loop()
 {
+  
   if(micros()-tOld >= TCAMP)
   {
     tOld = micros();
@@ -232,6 +233,7 @@ void loop()
   }
   handleOverflow();  
   //analogWrite(9, 110);
+  
 }
 
 /**
@@ -239,17 +241,19 @@ void loop()
  **/
 ISR(TIMER2_COMPA_vect)
 {
-  timerISR = micros();
+  //timerISR = micros();
   
-  misure();
-  pid();
+  //misure();
+  //pid();
   //analogWrite(11, 110);
   //motorSx.write(110);
   //sabertooth(uDx,uSx);
-  sabertooth(70,110);
-  contIsr++;
+  m1VelAng = 2.0*PI*1000000.0/(48.0*MSperiodAtt);
+  m2VelAng = 2.0*PI*1000000.0/(48.0*MDperiodAtt);
+  sabertooth(150,-150);
+  //contIsr++;
   
-  timerISR = micros() - timerISR;
+  //timerISR = micros() - timerISR;
 }
 
 void serialRoutine()
@@ -397,11 +401,11 @@ void misure()
 {
   timerMisure = micros();
   
-  M1deltaPos = (MSencoderPos - M1oldPos);
-  M1oldPos = MSencoderPos;
+ // M1deltaPos = (MSencoderPos - M1oldPos);
+ // M1oldPos = MSencoderPos;
   M2deltaPos = (MDencoderPos - M2oldPos);
   M2oldPos = MDencoderPos;
-  m1VelAng = (1-alpha)*m1VelAng + alpha*(2*PI*M1deltaPos)/(NUMEROIMPULSI)*1000000/dtPid;
+ // m1VelAng = (1-alpha)*m1VelAng + alpha*(2*PI*M1deltaPos)/(NUMEROIMPULSI)*1000000/dtPid;
   m2VelAng = (1-alpha)*m2VelAng + alpha*(2*PI*M2deltaPos)/(NUMEROIMPULSI)*1000000/dtPid;;
   M1velLin = m1VelAng*RAGGIORUOTA;
   M2velLin = m2VelAng*RAGGIORUOTA;
@@ -445,9 +449,9 @@ void odometry()
     if (printAngVel)
     {      
       Serial.println();
-      Serial.print(" m1VelAng: ");
+      Serial.print(" m1VelAng (SX): ");
       Serial.print(m1VelAng);
-      Serial.print(" m2VelAng: ");
+      Serial.print(" m2VelAng (DX): ");
       Serial.print(m2VelAng);
       Serial.println();
     }
@@ -561,7 +565,15 @@ void MDencoder()
 void MSencVel()
 {
    MSperiodAtt = micros()-MStOld;
+   //m1VelAng = 2.0*PI*1000000.0/(48.0*MSperiodAtt);
    MStOld = micros(); 
+}
+
+void MDencVel()
+{
+   MDperiodAtt = micros()-MDtOld;
+   //m1VelAng = 2.0*PI*1000000.0/(48.0*MSperiodAtt);
+   MDtOld = micros(); 
 }
 
 

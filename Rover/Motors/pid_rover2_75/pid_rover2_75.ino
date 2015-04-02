@@ -8,7 +8,9 @@
  *  
  *  - Motors Interface
  *  - Angular Velocity from encoders
- *  - PID Motors control
+ *  - TODO PID Motors control
+ *  - ISR 80Hz
+ *  - TODO: encoder bidir
  *  - Serial Routine, Press:
  *                    - 'a' -> TestMotors()
  *                    - 'i' -> Check ISR freq [Hz]
@@ -19,6 +21,10 @@
  *                    - 'w' -> Toogles printAngVel
  *                    - 'e' -> Toogles printEncoder
  *                    - 'h' -> Toogles printPidVals
+ *                    - 'r' -> Reset Pids
+ *                    - 'k \n p' -> Changes kp gain
+ *                    - 'k \n i' -> Changes ki gain
+ *                    - 'k \n d' -> Changes kd gain
  *
  **/
 
@@ -37,6 +43,7 @@
  * VIN <- Sabertooth 5V (OPTIONAL, Sabertooth powers Arduino)
 */
 
+#include "Pid.h"
 #include <Servo.h>
 Servo motorDx, motorSx;
 
@@ -47,17 +54,15 @@ Servo motorDx, motorSx;
 boolean generalPrint = true;
 
 // Infos
-boolean printTimerInfo = true;
+boolean printTimerInfo = false;
 
 // Odometry
-boolean printOdom = false;
-boolean printError = true;
-boolean printPidVal= false;
+boolean printOdom = true;
 boolean printMotorsDx = false;
-boolean printMotorsSx = false;
-boolean printAngVel= false;
+boolean printMotorsSx = true;
+boolean printAngVel= true;
 boolean printLinVel= false;
-boolean printEncoder= false;
+//boolean printEncoder= true;
 boolean printOrientation= false;
 boolean printPidVals= false;
 
@@ -65,34 +70,37 @@ boolean printPidVals= false;
  ** Setpoint References
  **/
  
-int riferimentoSx = 10; // [-470 ; 470]  (rad/s)
-int riferimentoDx = 0;
+float riferimentoSx = 40; // [-470 ; 470]  (rad/s)
+float riferimentoDx = 0;
 
 /**
  ** Control 
  **/
- 
+#define MAX_TIME_ENCODER  30000
+
 #define Ts 2000 //us
-#define Kp_1 0.0 //0.8
-#define Ki_1 0.0
+#define Kp_1 2.0 //0.8
+#define Ki_1 0.02
 #define Kd_1 0.0
 #define ControlDeadzone_1 5 //deadzone for u, the control variable
 
-#define Kp_2 0.0
+#define Kp_2 0.8
 #define Ki_2 0.0
 #define Kd_2 0.0
 #define ControlDeadzone_2 5
+
 
 /**
  ** Other
  **/
  
-// Timing
+// Timing  ------------------------------> BISOGNA TENER CONTO DELL'OVERFLOW  (dopo un'ora circa ?)
 volatile unsigned long int timerPid;
 volatile unsigned long int timerMisure;
 volatile unsigned long int timerSabertooth;
 volatile unsigned long int timerISR;
-volatile unsigned long int deltaPid, dtPid;
+volatile unsigned long int deltaPid = 12000;/**Dettato da freq ISR 80Hz*/
+volatile unsigned long int dtPid;
 
 // Input Motors
 volatile float uSx = 0, uDx = 0;
@@ -111,25 +119,29 @@ volatile long isra,isrb;
 #define KRAPP 1
 #define TCAMP 50000
 
+Pid pidSx = Pid(-Kp_1, -Ki_1*deltaPid/1000.0, -Kd_1);
+Pid pidDx = Pid(Kp_2, Ki_2*deltaPid/1000.0, Kd_2);
+
 volatile int u1 = 0; //control variable
-volatile float integraleSx = 0;
-volatile float derivativoSx = 0;
-volatile float proporzionaleSx = 0;
+//volatile float integraleSx = 0;
+//volatile float derivativoSx = 0;
+//volatile float proporzionaleSx = 0;
 volatile float erroreSx = 0;
 volatile float errore_old1 = 0;
 int Pwm_Static_Friction1 = 0;
 //variabili pid 2
 volatile int u2 = 0; //control variable
-volatile float integraleDx = 0;
-volatile float derivativoDx = 0;
-volatile float proporzionaleDx = 0;
+//volatile float integraleDx = get_ki();
+//volatile float derivativoDx = get_kd();
+//volatile float proporzionaleDx = get_kp();
 volatile float erroreDx = 0;
 volatile float errore_old2 = 0;
 int Pwm_Static_Friction2 = 0;
 
 //variabili per encoder motore 1 
 volatile long int MSencoderPos = 0;
-volatile long int MStOld = -30000;
+volatile long int MStOld = 0;
+volatile int MSverso = 0;
 volatile long int MSperiodAtt = 1;
 volatile long int M1deltaPos = 0;
 volatile long int M1oldPos = 0;
@@ -139,6 +151,7 @@ volatile float M1velLin = 0;
 //variabili per encoder motore 2
 volatile long int MDencoderPos = 0;
 volatile long int MDtOld = 0;
+volatile int MDverso = 0;
 volatile long int MDperiodAtt = 0;
 volatile long int M2deltaPos = 0;
 volatile long int M2oldPos = 0;
@@ -146,6 +159,8 @@ char M2verso = 1;
 volatile float m2VelAng = 0;
 volatile float M2velLin = 0;
 // Filter costante
+float VSdynamic = 0.2;
+float VDdynamic = 0.2;
 float alpha = 1.0;//0.08;
 //variabili rover
 volatile float velLinAss = 0;
@@ -202,19 +217,23 @@ void setup()
   // enable timer compare interrupt
   TIMSK2 |= (1 << OCIE2A);
   
-  sei(); //enable global interrupts
+
   
   // Define encoder pin Interrupt
   attachInterrupt(0, MSencVel, RISING);
-  attachInterrupt(1, MDencoder, RISING);
-  motorDx.attach(10, 1000, 2000); // SX ??
-  motorSx.attach(11, 1000, 2000); // DX ?? 
+  attachInterrupt(1, MDencVel, RISING);
+  
+  sei(); //enable global interrupts
+  
+  //motorDx.attach(10, 1000, 2000); // DX 
+  motorSx.attach(11, 1000, 2000); // SX  
   //pinMode(9, OUTPUT);
   firstTime = micros();
 }
 
 void loop()
 {
+  
   if(micros()-tOld >= TCAMP)
   {
     tOld = micros();
@@ -232,6 +251,7 @@ void loop()
   }
   handleOverflow();  
   //analogWrite(9, 110);
+  
 }
 
 /**
@@ -241,15 +261,43 @@ ISR(TIMER2_COMPA_vect)
 {
   timerISR = micros();
   
-  misure();
-  pid();
+  //misure();
+  //pid();
   //analogWrite(11, 110);
   //motorSx.write(110);
   //sabertooth(uDx,uSx);
-  sabertooth(70,110);
+  if(micros()-MStOld >= MAX_TIME_ENCODER){
+    m1VelAng = 0;
+  }else{
+    float act1Vel = float(MSverso)*2.0*PI*1000000.0/(NUMEROIMPULSI*MSperiodAtt);
+    m1VelAng -= VSdynamic * (m1VelAng - act1Vel);
+  }
+  
+  if(micros()-MDtOld >= MAX_TIME_ENCODER){
+    m2VelAng = 0;
+  }else{
+    float act2Vel = float(MDverso)*2.0*PI*1000000.0/(NUMEROIMPULSI*MDperiodAtt);
+    m2VelAng -= VDdynamic * (m2VelAng - act2Vel);
+  }
+  
+  deltaPid = micros() - deltaPid;
+  dtPid = deltaPid;
+  timerPid = micros();
+  
+  pidSx.change_ki(-Ki_1*deltaPid/1000000.0); 
+  pidDx.change_ki(Ki_2*deltaPid/1000000.0); 
+  
+  uSx = pidSx.get_u(riferimentoSx, m1VelAng) + 90; /**+90 per sabertooth*/
+  uDx = pidDx.get_u(riferimentoDx, m2VelAng) + 90; /**+90 per sabertooth*/
+  
+  timerPid = micros() - timerPid;
+  
+  sabertooth();
+  deltaPid = micros();
+  
   contIsr++;
   
-  timerISR = micros() - timerISR;
+  timerISR = micros() - timerISR; 
 }
 
 void serialRoutine()
@@ -293,15 +341,34 @@ void serialRoutine()
      Serial.println(" Toggles printAngVel ");
      printAngVel = !printAngVel;
    }
-   else if (t == 'e') 
-   {
-     Serial.println(" Toggles printEncoder ");
-     printEncoder = !printEncoder;
-   }
+//   else if (t == 'e') 
+//   {
+//     Serial.println(" Toggles printEncoder ");
+//     printEncoder = !printEncoder;
+//   }
    else if (t == 'h') 
    {
      Serial.println(" Toggles printPidVals ");
      printPidVals = !printPidVals;
+   }
+   else if (t == 'r') 
+   {
+     Serial.println(" Reset Pids: ");
+     pidSx.reset();
+     pidDx.reset();
+   }
+   else if (t == 'k') 
+   {
+     Serial.println(" Choose gains (insert 'p', 'i' or 'd' or other to ESC) ");
+     while(!(Serial.available() > 0));
+     t = Serial.read();
+     if(t == 'p'){
+       pidSx.change_kp(Serial.parseFloat());
+     } else if(t == 'i'){
+       pidSx.change_ki(Serial.parseFloat());
+     } else if(t == 'd'){
+       pidSx.change_kd(Serial.parseFloat());
+     }
    }
  } 
 }
@@ -348,39 +415,34 @@ void handleOverflow()
 
 void pid()   // Non modificato uK -- siamo in una  ISR -> change vars to volatile
 { 
- deltaPid = micros() - deltaPid;
- dtPid = deltaPid;
- timerPid = micros();
- 
-  // pid M148
-//  if(micros()-MStOld >= 30000){
-//    m1VelAng = 0;
-//    Serial.println("start");
-//  }else{
-//    m1VelAng = 2.0*PI*1000000.0/(48.0*MSperiodAtt);
- // }
-  erroreSx = riferimentoSx - m1VelAng; //*(52.0/14.0)
-  integraleSx = integraleSx + (Ki_1*dtPid*erroreSx)/1000.0;
-  proporzionaleSx = Kp_1*erroreSx;
-  derivativoSx = 1000000*Kd_1*(erroreSx-errore_old1)/dtPid;
-  u1 = int(proporzionaleSx) + (int) integraleSx + int(derivativoSx);
-  //u1 = 0;
-  errore_old1 = erroreSx;
-  // pid M2
-  erroreDx = riferimentoDx - m2VelAng; //*(52.0/18.0)
-  integraleDx = integraleDx + (Ki_2*dtPid*erroreDx)/1000;
-  proporzionaleDx =  Kp_2*erroreDx;
-  derivativoDx = 1000000*Kd_2*(erroreDx-errore_old2)/dtPid;
-  u2 = int(proporzionaleDx) + int(integraleDx) + int(derivativoDx);
-  //u2 = 0;
-  errore_old2 = erroreDx;
-  
-  uSx = u1;
-  uDx = u2;
-  controllo_deadzone(); 
-  
-  timerPid = micros() - timerPid;
-  deltaPid = micros();
+// deltaPid = micros() - deltaPid;
+// dtPid = deltaPid;
+// timerPid = micros();
+// 
+//  // pid M148
+//
+//  erroreSx = riferimentoSx - m1VelAng; //*(52.0/14.0)
+//  integraleSx = integraleSx + (Ki_1*dtPid*erroreSx)/1000.0;
+//  proporzionaleSx = Kp_1*erroreSx;
+//  derivativoSx = 1000000*Kd_1*(erroreSx-errore_old1)/dtPid;
+//  u1 = int(proporzionaleSx) + (int) integraleSx + int(derivativoSx);
+//  //u1 = 0;
+//  errore_old1 = erroreSx;
+//  // pid M2
+//  erroreDx = riferimentoDx - m2VelAng; //*(52.0/18.0)
+//  integraleDx = integraleDx + (Ki_2*dtPid*erroreDx)/1000;
+//  proporzionaleDx =  Kp_2*erroreDx;
+//  derivativoDx = 1000000*Kd_2*(erroreDx-errore_old2)/dtPid;
+//  u2 = int(proporzionaleDx) + int(integraleDx) + int(derivativoDx);
+//  //u2 = 0;
+//  errore_old2 = erroreDx;
+//  
+//  uSx = u1;
+//  uDx = u2;
+//  controllo_deadzone(); 
+//  
+//  timerPid = micros() - timerPid;
+//  deltaPid = micros();
 }
 
 void controllo_deadzone(void) // * ISR -> change to volatile
@@ -397,11 +459,11 @@ void misure()
 {
   timerMisure = micros();
   
-  M1deltaPos = (MSencoderPos - M1oldPos);
-  M1oldPos = MSencoderPos;
+ // M1deltaPos = (MSencoderPos - M1oldPos);
+ // M1oldPos = MSencoderPos;
   M2deltaPos = (MDencoderPos - M2oldPos);
   M2oldPos = MDencoderPos;
-  m1VelAng = (1-alpha)*m1VelAng + alpha*(2*PI*M1deltaPos)/(NUMEROIMPULSI)*1000000/dtPid;
+ // m1VelAng = (1-alpha)*m1VelAng + alpha*(2*PI*M1deltaPos)/(NUMEROIMPULSI)*1000000/dtPid;
   m2VelAng = (1-alpha)*m2VelAng + alpha*(2*PI*M2deltaPos)/(NUMEROIMPULSI)*1000000/dtPid;;
   M1velLin = m1VelAng*RAGGIORUOTA;
   M2velLin = m2VelAng*RAGGIORUOTA;
@@ -445,21 +507,21 @@ void odometry()
     if (printAngVel)
     {      
       Serial.println();
-      Serial.print(" m1VelAng: ");
+      Serial.print(" m1VelAng (SX): ");
       Serial.print(m1VelAng);
-      Serial.print(" m2VelAng: ");
+      Serial.print(" m2VelAng (DX): ");
       Serial.print(m2VelAng);
       Serial.println();
     }
-    if (printEncoder)
-    {
-      Serial.println();
-      Serial.print(" M1pos: ");
-      Serial.print(MSencoderPos);
-      Serial.print(" M2pos: ");
-      Serial.println(MDencoderPos);
-      Serial.println();
-    }  
+//    if (printEncoder)
+//    {
+//      Serial.println();
+//      Serial.print(" M1pos (SX): ");
+//      Serial.print(MSencoderPos);
+//      Serial.print(" M2pos (DX): ");
+//      Serial.println(MDencoderPos);
+//      Serial.println();
+//    }  
     if (printMotorsSx)
     {
       Serial.println();  
@@ -479,27 +541,27 @@ void odometry()
       //}
         Serial.println();
         Serial.print("ErrSX= ");
-        Serial.print(erroreSx); 
+        Serial.print(pidSx.get_error()); 
         Serial.print(" uSx= ");
-        Serial.print(u1);         
+        Serial.print(uSx);         
         Serial.print(" intSx= ");
-        Serial.print(integraleSx); 
+        Serial.print(pidSx.get_integ()); 
         Serial.print(" dervSx= ");
-        Serial.print(derivativoSx);
+        Serial.print(pidSx.get_deriv());
         Serial.print(" propSx= ");
-        Serial.print(proporzionaleSx);
+        Serial.print(pidSx.get_prop());
         
         Serial.println();
-        Serial.print("   ErrDX= ");
-        Serial.print(erroreDx);  
+        Serial.print(" ErrDX= ");
+        Serial.print(pidDx.get_error());  
         Serial.print(" uDx= ");
-        Serial.print(u2); 
-        Serial.print(" intSx= ");
-        Serial.print(integraleDx); 
-        Serial.print(" dervSx= ");
-        Serial.print(derivativoDx);
-        Serial.print(" propSx= ");
-        Serial.print(proporzionaleDx);
+        Serial.print(uDx); 
+        Serial.print(" intDx= ");
+        Serial.print(pidDx.get_integ()); 
+        Serial.print(" dervDx= ");
+        Serial.print(pidDx.get_deriv());
+        Serial.print(" propDx= ");
+        Serial.print(pidDx.get_prop());
         
         Serial.println();
     } 
@@ -513,19 +575,29 @@ void odometry()
  ** Called: from main loop
  ** Exec Time: TODO!
  **/
-void sabertooth(float uDx, float uSx)
+void sabertooth()
 {  
   timerSabertooth = micros();
   
-  if (uSx >= 190)
-   uSx = 190;
-  else if (uSx < 0)
-   uSx = 0;
+//  if (uSx >= 190)
+//   uSx = 190;
+//  else if (uSx < 0)
+//   uSx = 0;
+//   
+//  if (uDx >= 190)
+//   uDx = 190;
+//  else if (uDx < 0)
+//   uDx = 0;
    
-  if (uDx >= 190)
-   uDx = 190;
-  else if (uDx < 0)
-   uDx = 0;
+  if (uSx >= 150)
+   uSx = 150;
+  else if (uSx < 40)
+   uSx = 40;
+   
+  if (uDx >= 150)
+   uDx = 150;
+  else if (uDx < 40)
+   uDx = 40;
    
   motorDx.write(int(uDx));
   motorSx.write(int(uSx));
@@ -533,35 +605,45 @@ void sabertooth(float uDx, float uSx)
   timerSabertooth = micros() - timerSabertooth;
 }
 
-void MSencoder() /////////////////////////////////////////////////////////////Verso cambiato
-{   // check channel B to see which way encoder is turning
+//void MSencoder() /////////////////////////////////////////////////////////////Verso cambiato
+//{   // check channel B to see which way encoder is turning
 //    if (digitalRead(pinEncoderBS)){
 //      MSencoderPos++;
 //    }
 //    else{
 //      MSencoderPos--;
 //    }     
-  MSencoderPos++;
-    //PastB ? encoderPos--:  encoderPos++;     
-}
-void MDencoder()
-{   // check channel B to see which way encoder is turning
-    // check channel B to see which way encoder is turning
-    if (digitalRead(pinEncoderBD)){
-      MDencoderPos--;
-    }
-    else{
-      MDencoderPos++;
-    }     
-    //PastB ? encoderPos--:  encoderPos++;     
-}
+////  MSencoderPos++;
+//    //PastB ? encoderPos--:  encoderPos++;     
+//}
+//void MDencoder()
+//{   // check channel B to see which way encoder is turning
+//    // check channel B to see which way encoder is turning
+//    if (digitalRead(pinEncoderBD)){
+//      MDencoderPos--;
+//    }
+//    else{
+//      MDencoderPos++;
+//    }     
+//    //PastB ? encoderPos--:  encoderPos++;     
+//}
 
 
 
 void MSencVel()
 {
    MSperiodAtt = micros()-MStOld;
+   MSverso = digitalRead(pinEncoderBS)? -1:1;
+   //m1VelAng = 2.0*PI*1000000.0/(48.0*MSperiodAtt);
    MStOld = micros(); 
+}
+
+void MDencVel()
+{
+   MDperiodAtt = micros()-MDtOld;
+   MDverso = digitalRead(pinEncoderBD)? 1:-1;
+   //m1VelAng = 2.0*PI*1000000.0/(48.0*MSperiodAtt);
+   MDtOld = micros(); 
 }
 
 
@@ -573,7 +655,9 @@ void testMotor()
  boolean cond;
  for (int i = 90; i<255;i++)
  {
-   sabertooth(i,i);
+   uSx = i;
+   uDx = i;
+   sabertooth();
    delay(100);
    if (m1VelAng > 0)
    {  

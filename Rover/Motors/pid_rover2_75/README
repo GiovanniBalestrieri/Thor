@@ -1,0 +1,8 @@
+LOG:
+reata classe pid
+Calcolo velocita' senza posizioni encoder (evita overflow)
+Stampe aggiornate
+
+TO DO:
+taratura pid
+pulire codice
