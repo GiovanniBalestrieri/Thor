@@ -25,18 +25,18 @@ void setup() {
 }
 
 void loop(){
-        //
+  //
   float quat[] = {0.0, 0.0, 0.0, 0.0};
   float vel[] = {0, 0, 0};
   float acc[] = {0, 0, 0};
   publishImu(quat, vel, acc);
-        //
+  //
   float pos[] = {0, 0, 0};
   float lin[] = {0, 0, 0};
   float ang[] = {0, 0, 0};
   publishOdom(pos, quat, lin, ang);
-        //
-  delay(500);
+  //
+  delay(100);
 }
 
 void publishImu(float qu[], float av[], float la[])
