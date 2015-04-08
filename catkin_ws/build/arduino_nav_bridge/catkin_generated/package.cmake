@@ -1,7 +1,0 @@
-set(_CATKIN_CURRENT_PACKAGE "arduino_nav_bridge")
-set(arduino_nav_bridge_MAINTAINER "mrdeeppurple <mrdeeppurple@todo.todo>")
-set(arduino_nav_bridge_DEPRECATED "")
-set(arduino_nav_bridge_VERSION "0.0.0")
-set(arduino_nav_bridge_BUILD_DEPENDS "geometry_msgs" "nav_msgs" "roscpp" "rospy" "std_msgs")
-set(arduino_nav_bridge_RUN_DEPENDS "geometry_msgs" "nav_msgs" "roscpp" "rospy" "std_msgs")
-set(arduino_nav_bridge_BUILDTOOL_DEPENDS "catkin")
