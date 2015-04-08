@@ -80,7 +80,7 @@ MPU6050 mpu;
 // uncomment "OUTPUT_READABLE_QUATERNION" if you want to see the actual
 // quaternion components in a [w, x, y, z] format (not best for parsing
 // on a remote host such as Processing or something though)
- #define OUTPUT_READABLE_ACCELATION_LINEAR_and_ANGLE
+// #define OUTPUT_READABLE_ACCELATION_LINEAR_and_ANGLE
 
 
 // uncomment "OUTPUT_READABLE_QUATERNION" if you want to see the actual
@@ -92,7 +92,7 @@ MPU6050 mpu;
 // (in degrees) calculated from the quaternions coming from the FIFO.
 // Note that Euler angles suffer from gimbal lock (for more info, see
 // http://en.wikipedia.org/wiki/Gimbal_lock)
-//#define OUTPUT_READABLE_EULER
+#define OUTPUT_READABLE_EULER
 
 // uncomment "OUTPUT_READABLE_YAWPITCHROLL" if you want to see the yaw/
 // pitch/roll angles (in degrees) calculated from the quaternions coming
