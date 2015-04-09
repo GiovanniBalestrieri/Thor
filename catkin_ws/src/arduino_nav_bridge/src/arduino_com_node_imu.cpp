@@ -18,6 +18,7 @@ int main(int argc, char **argv){
 	set_covariance();
 	imu_msg.header.frame_id = "imu";
 	odom.header.frame_id = "wheelodom";
+	odom.child_frame_id = "base_footprint";
 	
 	/**** GESTIONE TOPIC ****/	
 	ros::Subscriber quatsub = n.subscribe("quaternion", 1000, quat_callback);

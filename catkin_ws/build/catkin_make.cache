@@ -1,0 +1,2 @@
+arduino_nav_bridge
+-DCATKIN_DEVEL_PREFIX=/home/mrdeeppurple/catkin_ws/devel -DCMAKE_INSTALL_PREFIX=/home/mrdeeppurple/catkin_ws/install -G Unix Makefiles
