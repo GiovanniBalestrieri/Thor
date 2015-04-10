@@ -72,14 +72,39 @@ arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/arduino_com_node_i
 
 arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/arduino_com_node_imu.cpp.o.provides.build: arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/arduino_com_node_imu.cpp.o
 
+arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/cserial.cpp.o: arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/flags.make
+arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/cserial.cpp.o: /home/mrdeeppurple/catkin_ws/src/arduino_nav_bridge/src/cserial.cpp
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/mrdeeppurple/catkin_ws/build/CMakeFiles $(CMAKE_PROGRESS_2)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/cserial.cpp.o"
+	cd /home/mrdeeppurple/catkin_ws/build/arduino_nav_bridge && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/arduino_nav_bridge_node.dir/src/cserial.cpp.o -c /home/mrdeeppurple/catkin_ws/src/arduino_nav_bridge/src/cserial.cpp
+
+arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/cserial.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/arduino_nav_bridge_node.dir/src/cserial.cpp.i"
+	cd /home/mrdeeppurple/catkin_ws/build/arduino_nav_bridge && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/mrdeeppurple/catkin_ws/src/arduino_nav_bridge/src/cserial.cpp > CMakeFiles/arduino_nav_bridge_node.dir/src/cserial.cpp.i
+
+arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/cserial.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/arduino_nav_bridge_node.dir/src/cserial.cpp.s"
+	cd /home/mrdeeppurple/catkin_ws/build/arduino_nav_bridge && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/mrdeeppurple/catkin_ws/src/arduino_nav_bridge/src/cserial.cpp -o CMakeFiles/arduino_nav_bridge_node.dir/src/cserial.cpp.s
+
+arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/cserial.cpp.o.requires:
+.PHONY : arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/cserial.cpp.o.requires
+
+arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/cserial.cpp.o.provides: arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/cserial.cpp.o.requires
+	$(MAKE) -f arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/build.make arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/cserial.cpp.o.provides.build
+.PHONY : arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/cserial.cpp.o.provides
+
+arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/cserial.cpp.o.provides.build: arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/cserial.cpp.o
+
 # Object files for target arduino_nav_bridge_node
 arduino_nav_bridge_node_OBJECTS = \
-"CMakeFiles/arduino_nav_bridge_node.dir/src/arduino_com_node_imu.cpp.o"
+"CMakeFiles/arduino_nav_bridge_node.dir/src/arduino_com_node_imu.cpp.o" \
+"CMakeFiles/arduino_nav_bridge_node.dir/src/cserial.cpp.o"
 
 # External object files for target arduino_nav_bridge_node
 arduino_nav_bridge_node_EXTERNAL_OBJECTS =
 
 /home/mrdeeppurple/catkin_ws/devel/lib/arduino_nav_bridge/arduino_nav_bridge_node: arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/arduino_com_node_imu.cpp.o
+/home/mrdeeppurple/catkin_ws/devel/lib/arduino_nav_bridge/arduino_nav_bridge_node: arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/cserial.cpp.o
 /home/mrdeeppurple/catkin_ws/devel/lib/arduino_nav_bridge/arduino_nav_bridge_node: arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/build.make
 /home/mrdeeppurple/catkin_ws/devel/lib/arduino_nav_bridge/arduino_nav_bridge_node: /opt/ros/indigo/lib/libroscpp.so
 /home/mrdeeppurple/catkin_ws/devel/lib/arduino_nav_bridge/arduino_nav_bridge_node: /usr/lib/x86_64-linux-gnu/libboost_signals.so
@@ -107,6 +132,7 @@ arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/build: /home/mrdeeppur
 .PHONY : arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/build
 
 arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/requires: arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/arduino_com_node_imu.cpp.o.requires
+arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/requires: arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/cserial.cpp.o.requires
 .PHONY : arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/requires
 
 arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/clean:

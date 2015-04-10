@@ -1,9 +1,3 @@
-/* Librerie ROS */
-#include <ros.h>
-#include <geometry_msgs/Vector3.h>
-#include <geometry_msgs/Quaternion.h>
-#include <sensor_msgs/Imu.h>
-
 /* Librerie IMU */
 #include <I2Cdev.h>
 #include <MPU6050_6Axis_MotionApps20.h>
@@ -20,6 +14,7 @@ uint8_t devStatus;      // return status after each device operation (0 = succes
 uint16_t packetSize;    // expected DMP packet size (default is 42 bytes)
 uint16_t fifoCount;     // count of all bytes currently in FIFO
 uint8_t fifoBuffer[64]; // FIFO storage buffer
+int seqno;
 
 // orientation/motion vars
 Quaternion q;           // [w, x, y, z]         quaternion container
@@ -31,17 +26,6 @@ int16_t g[3];
 float euler[3];         // [psi, theta, phi]    Euler angle container
 float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
 
-
-/* ROS */
-ros::NodeHandle nh;
-geometry_msgs::Quaternion orientation;
-geometry_msgs::Vector3 angular_velocity;
-geometry_msgs::Vector3 linear_acceleration;
-ros::Publisher pub_quat("quaternion", &orientation);
-ros::Publisher pub_vel("ang_vel", &angular_velocity);
-ros::Publisher pub_acc("lin_accel", &linear_acceleration);
-sensor_msgs::Imu imu_msg;
-uint32_t seq_num;
 
 // ================================================================
 // ===               INTERRUPT DETECTION ROUTINE                ===
@@ -58,12 +42,7 @@ void dmpDataReady() {
 // ================================================================
 
 void setup() {
-    /* ROS */
-    nh.initNode();
-    nh.advertise(pub_quat);
-    nh.advertise(pub_vel);
-    nh.advertise(pub_acc);
-
+    Serial.begin(115200);
     // join I2C bus (I2Cdev library doesn't do this automatically)
     #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
         Wire.begin();
@@ -72,16 +51,10 @@ void setup() {
         Fastwire::setup(400, true);
     #endif
 
-    Serial.begin(115200);
-
     // initialize device
-    Serial.println(F("Initializing I2C devices..."));
     mpu.initialize();
 
     // verify connection
-    Serial.println(F("Testing device connections..."));
-    Serial.println(mpu.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
-    Serial.println(F("Initializing DMP..."));
     devStatus = mpu.dmpInitialize();
 
     mpu.setXGyroOffset(220);
@@ -89,22 +62,16 @@ void setup() {
     mpu.setZGyroOffset(-85);
     //mpu.setZAccelOffset(1788); // 1688 factory default for my test chip
     if (devStatus == 0) {
-        Serial.println(F("Enabling DMP..."));
         mpu.setDMPEnabled(true);
-        
-        Serial.println(F("Enabling interrupt detection (Arduino external interrupt 0)..."));
         attachInterrupt(0, dmpDataReady, RISING);
         
         mpuIntStatus = mpu.getIntStatus();
         
-        Serial.println(F("DMP ready! Waiting for first interrupt..."));
         
         dmpReady = true;
         packetSize = mpu.dmpGetFIFOPacketSize();
-    } else {// ERROR!
-      Serial.println("ERROR!");
-    }
-
+    } else {/* ERROR!*/}    
+  seqno = 0;
 }
 
 
@@ -123,9 +90,7 @@ void loop() {
 
     if ((mpuIntStatus & 0x10) || fifoCount == 1024) {
         // reset so we can continue cleanly
-          mpu.resetFIFO();
-          Serial.println(F("FIFO overflow!"));
-          
+          mpu.resetFIFO();          
       } else if (mpuIntStatus & 0x02) {
         
         while (fifoCount < packetSize) fifoCount = mpu.getFIFOCount();
@@ -138,58 +103,49 @@ void loop() {
         mpu.dmpGetGyro(g, fifoBuffer);
         //mpu.dmpGetGravity(&gravity, &q);
         //mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
-        Serial.print("accel\t");
-        Serial.print(aa.x);
-        Serial.print("\t");
-        Serial.print(aa.y);
-        Serial.print("\t");
-        Serial.println(aa.z);
-        Serial.print("gyro\t");
-        Serial.print(g[0]);
-        Serial.print("\t");
-        Serial.print(g[1]);
-        Serial.print("\t");
-        Serial.println(g[2]);
-        Serial.print("quaternion\t");
-        Serial.print(q.x);
-        Serial.print("\t");
-        Serial.print(q.y);
-        Serial.print("\t");
-        Serial.println(q.z);
-        Serial.print("\t");
-        Serial.println(q.w);
         
         /* ROS */
-        /*
-        sensor_msgs/Imu
-	std_msgs/Header
-		uint32 seq
-		time stamp
-		string frame_id
-		string child_frame_id
-
-        */
-        // Quaternioni
-        orientation.x = q.x;
-        orientation.y = q.y;
-        orientation.z = q.z;
-        orientation.w = q.w;
-        
-        // Velocità angolare
-        angular_velocity.x = g[0];//gyroTransform(g[0]);
-        angular_velocity.y = g[1];//gyroTransform(g[1]);
-        angular_velocity.z = g[2];//gyroTransform(g[2]);
-        
-        // Accelerazione angolare
-        linear_acceleration.x = aa.x;//accelTransform(aa.x);
-        linear_acceleration.y = aa.y;//accelTransform(aa.y);
-        linear_acceleration.z = aa.z;//accelTransform(aa.z);
-        
-        pub_quat.publish( &orientation );
-        pub_quat.publish( &angular_velocity );
-        pub_quat.publish( &linear_acceleration );
-        
-        nh.spinOnce();
-        seq_num;
+        float quat[] = {q.x, q.y, q.z, q.w};
+        float vel[] = {g[0], g[1], g[2]};
+        float acc[] = {aa.x, aa.y, aa.z};
+        publishImu(quat, vel, acc);
+        seqno = (seqno+1)%256;
+        //
+        float pos[] = {0, 0, 0};
+        float lin[] = {0, 0, 0};
+        float ang[] = {0, 0, 0};
+        publishOdom(pos, quat, lin, ang);
+        seqno = (seqno+1)%256;
     }
+}
+
+
+void publishImu(float qu[], float av[], float la[])
+{
+  
+  byte buffer[43];
+  buffer[0] = (byte)seqno;
+  buffer[1] = 0;
+  buffer[2] = 40;
+  
+  memcpy(buffer+3, qu, 16);
+  memcpy(buffer+19, av, 12);
+  memcpy(buffer+31, la, 12);
+  
+  Serial.write(buffer, 43);
+}
+
+void publishOdom(float po[], float qu[], float li[], float an[])
+{
+  byte buffer[55];
+  buffer[0] = (byte)seqno;
+  buffer[1] = 1;
+  buffer[2] = 53;
+  
+  memcpy(buffer+3, po, 12);
+  memcpy(buffer+15, qu, 16);
+  memcpy(buffer+31, li, 12);
+  memcpy(buffer+43, an, 12);
+  
+  Serial.write(buffer, 55);
 }

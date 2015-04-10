@@ -439,6 +439,30 @@ src/arduino_com_node_imu.cpp.s:
 	cd /home/mrdeeppurple/catkin_ws/build && $(MAKE) -f arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/build.make arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/arduino_com_node_imu.cpp.s
 .PHONY : src/arduino_com_node_imu.cpp.s
 
+src/cserial.o: src/cserial.cpp.o
+.PHONY : src/cserial.o
+
+# target to build an object file
+src/cserial.cpp.o:
+	cd /home/mrdeeppurple/catkin_ws/build && $(MAKE) -f arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/build.make arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/cserial.cpp.o
+.PHONY : src/cserial.cpp.o
+
+src/cserial.i: src/cserial.cpp.i
+.PHONY : src/cserial.i
+
+# target to preprocess a source file
+src/cserial.cpp.i:
+	cd /home/mrdeeppurple/catkin_ws/build && $(MAKE) -f arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/build.make arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/cserial.cpp.i
+.PHONY : src/cserial.cpp.i
+
+src/cserial.s: src/cserial.cpp.s
+.PHONY : src/cserial.s
+
+# target to generate assembly for a file
+src/cserial.cpp.s:
+	cd /home/mrdeeppurple/catkin_ws/build && $(MAKE) -f arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/build.make arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/cserial.cpp.s
+.PHONY : src/cserial.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -474,6 +498,9 @@ help:
 	@echo "... src/arduino_com_node_imu.o"
 	@echo "... src/arduino_com_node_imu.i"
 	@echo "... src/arduino_com_node_imu.s"
+	@echo "... src/cserial.o"
+	@echo "... src/cserial.i"
+	@echo "... src/cserial.s"
 .PHONY : help
 
 

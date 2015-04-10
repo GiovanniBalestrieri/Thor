@@ -1,5 +1,6 @@
 FILE(REMOVE_RECURSE
   "CMakeFiles/arduino_nav_bridge_node.dir/src/arduino_com_node_imu.cpp.o"
+  "CMakeFiles/arduino_nav_bridge_node.dir/src/cserial.cpp.o"
   "/home/mrdeeppurple/catkin_ws/devel/lib/arduino_nav_bridge/arduino_nav_bridge_node.pdb"
   "/home/mrdeeppurple/catkin_ws/devel/lib/arduino_nav_bridge/arduino_nav_bridge_node"
 )

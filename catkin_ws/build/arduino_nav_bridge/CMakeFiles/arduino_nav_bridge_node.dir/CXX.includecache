@@ -21,7 +21,25 @@ sensor_msgs/Imu.h
 -
 nav_msgs/Odometry.h
 -
+cserial.h
+/home/mrdeeppurple/catkin_ws/src/arduino_nav_bridge/src/cserial.h
 sstream
+-
+
+/home/mrdeeppurple/catkin_ws/src/arduino_nav_bridge/src/cserial.h
+stdio.h
+-
+stdlib.h
+-
+termios.h
+-
+unistd.h
+-
+fcntl.h
+-
+string.h
+-
+errno.h
 -
 
 /opt/ros/indigo/include/XmlRpcDecl.h

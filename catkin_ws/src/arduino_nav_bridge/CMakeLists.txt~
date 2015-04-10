@@ -105,7 +105,7 @@ include_directories(
 # )
 
 ## Declare a cpp executable
-add_executable(arduino_nav_bridge_node src/arduino_com_node_imu.cpp src/cserial.cpp)
+add_executable(arduino_nav_bridge_node src/arduino_com_node_imu.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes

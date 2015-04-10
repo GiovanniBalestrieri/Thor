@@ -5,6 +5,7 @@ SET(CMAKE_DEPENDS_LANGUAGES
 # The set of files for implicit dependencies of each language:
 SET(CMAKE_DEPENDS_CHECK_CXX
   "/home/mrdeeppurple/catkin_ws/src/arduino_nav_bridge/src/arduino_com_node_imu.cpp" "/home/mrdeeppurple/catkin_ws/build/arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/arduino_com_node_imu.cpp.o"
+  "/home/mrdeeppurple/catkin_ws/src/arduino_nav_bridge/src/cserial.cpp" "/home/mrdeeppurple/catkin_ws/build/arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/cserial.cpp.o"
   )
 SET(CMAKE_CXX_COMPILER_ID "GNU")
 

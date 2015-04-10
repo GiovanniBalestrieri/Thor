@@ -4,6 +4,7 @@
 arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/arduino_com_node_imu.cpp.o
  /home/mrdeeppurple/catkin_ws/src/arduino_nav_bridge/src/arduino_com_node_imu.cpp
  /home/mrdeeppurple/catkin_ws/src/arduino_nav_bridge/src/arduino_com_node_imu.h
+ /home/mrdeeppurple/catkin_ws/src/arduino_nav_bridge/src/cserial.h
  /opt/ros/indigo/include/XmlRpcDecl.h
  /opt/ros/indigo/include/XmlRpcValue.h
  /opt/ros/indigo/include/geometry_msgs/Point.h
@@ -70,3 +71,6 @@ arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/arduino_com_node_i
  /opt/ros/indigo/include/rosconsole/macros_generated.h
  /opt/ros/indigo/include/sensor_msgs/Imu.h
  /opt/ros/indigo/include/std_msgs/Header.h
+arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/cserial.cpp.o
+ /home/mrdeeppurple/catkin_ws/src/arduino_nav_bridge/src/cserial.cpp
+ /home/mrdeeppurple/catkin_ws/src/arduino_nav_bridge/src/cserial.h
