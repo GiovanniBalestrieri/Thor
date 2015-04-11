@@ -1,19 +1,18 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(arduino_nav_bridge)
+project(arduino_ekf_response)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
-  nav_msgs
   roscpp
   rospy
   std_msgs
 )
 
 ## System dependencies are found with CMake's conventions
-find_package(catkin REQUIRED COMPONENTS roscpp rospy geometry_msgs nav_msgs genmsg)
+# find_package(Boost REQUIRED COMPONENTS system)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -69,7 +68,7 @@ find_package(catkin REQUIRED COMPONENTS roscpp rospy geometry_msgs nav_msgs genm
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   geometry_msgs#   nav_msgs#   std_msgs
+#   geometry_msgs#   std_msgs
 # )
 
 ###################################
@@ -83,8 +82,8 @@ find_package(catkin REQUIRED COMPONENTS roscpp rospy geometry_msgs nav_msgs genm
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES arduino_nav_bridge
-#  CATKIN_DEPENDS geometry_msgs nav_msgs roscpp rospy std_msgs
+#  LIBRARIES arduino_ekf_response
+#  CATKIN_DEPENDS geometry_msgs roscpp rospy std_msgs
 #  DEPENDS system_lib
 )
 
@@ -100,19 +99,21 @@ include_directories(
 )
 
 ## Declare a cpp library
-# add_library(arduino_nav_bridge
-#   src/${PROJECT_NAME}/arduino_nav_bridge.cpp
+# add_library(arduino_ekf_response
+#   src/${PROJECT_NAME}/arduino_ekf_response.cpp
 # )
 
 ## Declare a cpp executable
-add_executable(arduino_nav_bridge_node src/arduino_com_node_imu.cpp src/cserial.cpp src/arduino_ekf_response.cpp)
+# add_executable(arduino_ekf_response_node src/arduino_ekf_response_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-add_dependencies(arduino_nav_bridge_node arduino_nav_bridge_generate_messages_cpp)
+# add_dependencies(arduino_ekf_response_node arduino_ekf_response_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(arduino_nav_bridge_node ${catkin_LIBRARIES} )
+# target_link_libraries(arduino_ekf_response_node
+#   ${catkin_LIBRARIES}
+# )
 
 #############
 ## Install ##
@@ -129,7 +130,7 @@ target_link_libraries(arduino_nav_bridge_node ${catkin_LIBRARIES} )
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS arduino_nav_bridge arduino_nav_bridge_node
+# install(TARGETS arduino_ekf_response arduino_ekf_response_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -154,7 +155,7 @@ target_link_libraries(arduino_nav_bridge_node ${catkin_LIBRARIES} )
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_arduino_nav_bridge.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_arduino_ekf_response.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

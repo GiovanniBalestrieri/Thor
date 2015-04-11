@@ -11,6 +11,7 @@
 
 #define READ_ALL -1
 #define STDBUFFSIZE 255
+#define PACKETSIZE 56
 
 class cserial
 {
@@ -18,15 +19,16 @@ class cserial
 		int connected;
 		int serialfileno;
 		speed_t intToBaud(int);
-		char * read_buffer();
-		char * partial_read_buffer(size_t);
+		int read_buffer(char *);
+		int partial_read_buffer(char *, size_t);
+		char compute_checksum(char * , int);
 	public:
 		cserial();
 		~cserial();
 		int connect(char *, int);
 		int disconnect();
-		char * read(size_t);
-		int write(void *, int);
+		int serial_read(char *, size_t);
+		int serial_write(char *, size_t);
 		int is_connected();
 };
 

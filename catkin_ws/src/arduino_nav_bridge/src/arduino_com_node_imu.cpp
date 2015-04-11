@@ -9,7 +9,8 @@ nav_msgs::Odometry odom;
 ros::Publisher imu_pub;
 ros::Publisher odom_pub;
 
-int main(int argc, char **argv){
+int main(int argc, char **argv)
+{
 	ros::init(argc, argv, "imu_bridge");	
 	ros::NodeHandle n;
 	ros::Rate r(10);
@@ -20,26 +21,13 @@ int main(int argc, char **argv){
 	odom.header.frame_id = "wheelodom";
 	odom.child_frame_id = "base_footprint";
 	
-	/**** GESTIONE TOPIC ****/
-	/* DEPRECATO */	
-	/*
-	ros::Subscriber quatsub = n.subscribe("quaternion", 1000, quat_callback);
-	ros::Subscriber velsub = n.subscribe("ang_vel", 1000, vel_callback);
-	ros::Subscriber accsub = n.subscribe("lin_accel", 1000, acc_callback);
-	
-	ros::Subscriber posesub = n.subscribe("odom_pose", 1000, pose_callback);
-	ros::Subscriber twistsub = n.subscribe("odom_twist", 1000, twist_callback);
-	*/
 	imu_pub = n.advertise<sensor_msgs::Imu>("imu_data", 1000);
 	odom_pub = n.advertise<nav_msgs::Odometry>("odom", 1000);
-	/*
-	ros::spin();
-	*/
 	
 	/**** COMUNICAZIONE SERIALE ****/
-	char * serialport = "/dev/ttyACM0";
+	char * serialport = "/dev/ttyACM1";
 	cserial serial;
-	if(serial.connect(serialport, 115200) < 0)
+	if(serial.connect(serialport, 57600) < 0)
 	{
 		return 1;
 	}
@@ -51,27 +39,21 @@ int main(int argc, char **argv){
 		 *	byte 1 		-> sensor_id
 		 *	byte [2-5] 	-> msg_size
 		 *	byte [6-fine]	-> data
+		 *	ultimo byte	-> checksum (non utilizzato)
 		 */
-		char * cmd = serial.serial_read(READ_ALL);
-		if(cmd == NULL) 
+		char * cmd = (char *) malloc(55*sizeof(char));
+		if(cmd == NULL)
+		{
+			return 1;
+		}
+		if(serial.serial_read(cmd, 56) < 0) 
 		{
 			actualsequencenumber = (actualsequencenumber+1)%256;
 			r.sleep();
 			continue;
 		}
 		/* parsing comando */
-		char sequence_number = cmd[SEQNO_OFF];
-		if(sequence_number < actualsequencenumber)
-		{
-			/* ricevuto un messaggio vecchio */
-			free(cmd);
-			r.sleep();
-			continue;
-		}
-		else if(sequence_number > actualsequencenumber)
-		{
-			actualsequencenumber = sequence_number;
-		}
+		int sequence_number = (int)cmd[SEQNO_OFF];
 		char sensor_id = cmd[SENSORID_OFF];
 		int msg_size = cmd[MSGSIZE_OFF];
 		char * data = cmd+DATA_OFF;
@@ -118,7 +100,7 @@ int main(int argc, char **argv){
 			 *	linear (3 float)
 			 *	angular (3 float)
 			 */
-			 if(msg_size != 10*sizeof(float))
+			 if(msg_size != 13*sizeof(float))
 			 {
 			 	/* dimensione sbagliata */
 			 	/* ignoro il messaggio */
@@ -150,7 +132,7 @@ int main(int argc, char **argv){
 		/* Aggiorno il numero di sequenza e addormento il processo */
 		free(cmd);
 		actualsequencenumber = (actualsequencenumber+1)%256;
-		r.sleep();
+		//r.sleep();
 	}
 	serial.disconnect();
 	return 0;
@@ -358,58 +340,3 @@ void twist(const float * l, const float * a){
 		sendOdometry(TWIST_MSG);
 	}
 }
-
-/* FUNZIONI DI COMUNICAZIONE CON ARDUINO */
-/* DEPRECATE */
-/*
-void quat_callback(const geometry_msgs::Quaternion q){
-	imu_msg.orientation.x = q.x;
-	imu_msg.orientation.y = q.y;
-	imu_msg.orientation.z = q.z;
-	imu_msg.orientation.w = q.w;
-	
-	sendImu(QUATERNION_MSG);
-}
-
-void vel_callback(const geometry_msgs::Vector3 s){
-	imu_msg.angular_velocity.x = s.x;
-	imu_msg.angular_velocity.y = s.y;
-	imu_msg.angular_velocity.z = s.z;
-
-	sendImu(VELOCITY_MSG);
-}
-
-void acc_callback(const geometry_msgs::Vector3 a){
-	imu_msg.linear_acceleration.x = a.x;
-	imu_msg.linear_acceleration.y = a.y;
-	imu_msg.linear_acceleration.z = a.z;
-	
-	sendImu(ACCELERATION_MSG);
-}
-
-void pose_callback(const geometry_msgs::Pose p){
-	odom.pose.pose.position.x = p.position.x;
-	odom.pose.pose.position.y = p.position.y;
-	odom.pose.pose.position.z = p.position.z;
-	
-	odom.pose.pose.orientation.x = p.orientation.x;
-	odom.pose.pose.orientation.y = p.orientation.y;
-	odom.pose.pose.orientation.z = p.orientation.z;
-	odom.pose.pose.orientation.w = p.orientation.w;
-	
-	
-	sendOdometry(POSE_MSG);
-}
-
-void twist_callback(const geometry_msgs::Twist t){
-	odom.twist.twist.linear.x = t.linear.x;
-	odom.twist.twist.linear.y = t.linear.y;
-	odom.twist.twist.linear.z = t.linear.z;
-	
-	odom.twist.twist.angular.x = t.angular.x;
-	odom.twist.twist.angular.y = t.angular.x;
-	odom.twist.twist.angular.z = t.angular.x;
-	
-	sendOdometry(TWIST_MSG);
-}
-*/
