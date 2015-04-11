@@ -12,4 +12,7 @@
  	   	<param name="debug" value="false"/>
     		<param name="self_diagnose" value="false"/>
  	</node>
+
+	<node pkg="arduino_nav_bridge" type="arduino_ekf_response_node" name="ekf_response">
+	</node>
 </launch>
