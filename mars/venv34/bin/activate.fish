@@ -32,7 +32,7 @@ end
 # unset irrelavent variables
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV "/home/robotica/PycharmProjects/mars/venv34"
+set -gx VIRTUAL_ENV "/home/robotica/nasa/Thor/mars/venv34"
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/bin" $PATH

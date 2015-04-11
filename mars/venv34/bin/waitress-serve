@@ -1,4 +1,4 @@
-#!/home/robotica/PycharmProjects/mars/venv34/bin/python
+#!/home/robotica/nasa/Thor/mars/venv34/bin/python
 # EASY-INSTALL-ENTRY-SCRIPT: 'waitress==0.8.9','console_scripts','waitress-serve'
 __requires__ = 'waitress==0.8.9'
 import sys

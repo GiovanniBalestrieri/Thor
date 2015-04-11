@@ -1,4 +1,4 @@
-#!/home/robotica/PycharmProjects/mars/venv34/bin/python
+#!/home/robotica/nasa/Thor/mars/venv34/bin/python
 # EASY-INSTALL-ENTRY-SCRIPT: 'mars==0.0','console_scripts','initialize_mars_db'
 __requires__ = 'mars==0.0'
 import sys

@@ -1,4 +1,4 @@
-#!/home/robotica/PycharmProjects/mars/venv34/bin/python
+#!/home/robotica/nasa/Thor/mars/venv34/bin/python
 # EASY-INSTALL-ENTRY-SCRIPT: 'pyramid==1.5.4','console_scripts','pserve'
 __requires__ = 'pyramid==1.5.4'
 import sys
