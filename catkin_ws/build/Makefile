@@ -267,6 +267,19 @@ actionlib_msgs_generate_messages_py/fast:
 .PHONY : actionlib_msgs_generate_messages_py/fast
 
 #=============================================================================
+# Target rules for targets named arduino_ekf_response_node
+
+# Build rule for target.
+arduino_ekf_response_node: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 arduino_ekf_response_node
+.PHONY : arduino_ekf_response_node
+
+# fast build rule for target.
+arduino_ekf_response_node/fast:
+	$(MAKE) -f arduino_nav_bridge/CMakeFiles/arduino_ekf_response_node.dir/build.make arduino_nav_bridge/CMakeFiles/arduino_ekf_response_node.dir/build
+.PHONY : arduino_ekf_response_node/fast
+
+#=============================================================================
 # Target rules for targets named arduino_nav_bridge_node
 
 # Build rule for target.
@@ -496,6 +509,7 @@ help:
 	@echo "... actionlib_msgs_generate_messages_cpp"
 	@echo "... actionlib_msgs_generate_messages_lisp"
 	@echo "... actionlib_msgs_generate_messages_py"
+	@echo "... arduino_ekf_response_node"
 	@echo "... arduino_nav_bridge_node"
 	@echo "... geometry_msgs_generate_messages_cpp"
 	@echo "... geometry_msgs_generate_messages_lisp"

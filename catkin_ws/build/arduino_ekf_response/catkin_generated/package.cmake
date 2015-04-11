@@ -1,0 +1,7 @@
+set(_CATKIN_CURRENT_PACKAGE "arduino_ekf_response")
+set(arduino_ekf_response_MAINTAINER "mrdeeppurple <mrdeeppurple@todo.todo>")
+set(arduino_ekf_response_DEPRECATED "")
+set(arduino_ekf_response_VERSION "0.0.0")
+set(arduino_ekf_response_BUILD_DEPENDS "geometry_msgs" "roscpp" "rospy" "std_msgs")
+set(arduino_ekf_response_RUN_DEPENDS "geometry_msgs" "roscpp" "rospy" "std_msgs")
+set(arduino_ekf_response_BUILDTOOL_DEPENDS "catkin")

@@ -1,6 +1,7 @@
 /home/mrdeeppurple/catkin_ws/build/arduino_nav_bridge/CMakeFiles/actionlib_msgs_generate_messages_cpp.dir
 /home/mrdeeppurple/catkin_ws/build/arduino_nav_bridge/CMakeFiles/actionlib_msgs_generate_messages_lisp.dir
 /home/mrdeeppurple/catkin_ws/build/arduino_nav_bridge/CMakeFiles/actionlib_msgs_generate_messages_py.dir
+/home/mrdeeppurple/catkin_ws/build/arduino_nav_bridge/CMakeFiles/arduino_ekf_response_node.dir
 /home/mrdeeppurple/catkin_ws/build/arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir
 /home/mrdeeppurple/catkin_ws/build/CMakeFiles/clean_test_results.dir
 /home/mrdeeppurple/catkin_ws/build/CMakeFiles/doxygen.dir

@@ -192,6 +192,20 @@ actionlib_msgs_generate_messages_py/fast:
 .PHONY : actionlib_msgs_generate_messages_py/fast
 
 # Convenience name for target.
+arduino_nav_bridge/CMakeFiles/arduino_ekf_response_node.dir/rule:
+	cd /home/mrdeeppurple/catkin_ws/build && $(MAKE) -f CMakeFiles/Makefile2 arduino_nav_bridge/CMakeFiles/arduino_ekf_response_node.dir/rule
+.PHONY : arduino_nav_bridge/CMakeFiles/arduino_ekf_response_node.dir/rule
+
+# Convenience name for target.
+arduino_ekf_response_node: arduino_nav_bridge/CMakeFiles/arduino_ekf_response_node.dir/rule
+.PHONY : arduino_ekf_response_node
+
+# fast build rule for target.
+arduino_ekf_response_node/fast:
+	cd /home/mrdeeppurple/catkin_ws/build && $(MAKE) -f arduino_nav_bridge/CMakeFiles/arduino_ekf_response_node.dir/build.make arduino_nav_bridge/CMakeFiles/arduino_ekf_response_node.dir/build
+.PHONY : arduino_ekf_response_node/fast
+
+# Convenience name for target.
 arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/rule:
 	cd /home/mrdeeppurple/catkin_ws/build && $(MAKE) -f CMakeFiles/Makefile2 arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/rule
 .PHONY : arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/rule
@@ -439,11 +453,36 @@ src/arduino_com_node_imu.cpp.s:
 	cd /home/mrdeeppurple/catkin_ws/build && $(MAKE) -f arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/build.make arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/arduino_com_node_imu.cpp.s
 .PHONY : src/arduino_com_node_imu.cpp.s
 
+src/arduino_ekf_response.o: src/arduino_ekf_response.cpp.o
+.PHONY : src/arduino_ekf_response.o
+
+# target to build an object file
+src/arduino_ekf_response.cpp.o:
+	cd /home/mrdeeppurple/catkin_ws/build && $(MAKE) -f arduino_nav_bridge/CMakeFiles/arduino_ekf_response_node.dir/build.make arduino_nav_bridge/CMakeFiles/arduino_ekf_response_node.dir/src/arduino_ekf_response.cpp.o
+.PHONY : src/arduino_ekf_response.cpp.o
+
+src/arduino_ekf_response.i: src/arduino_ekf_response.cpp.i
+.PHONY : src/arduino_ekf_response.i
+
+# target to preprocess a source file
+src/arduino_ekf_response.cpp.i:
+	cd /home/mrdeeppurple/catkin_ws/build && $(MAKE) -f arduino_nav_bridge/CMakeFiles/arduino_ekf_response_node.dir/build.make arduino_nav_bridge/CMakeFiles/arduino_ekf_response_node.dir/src/arduino_ekf_response.cpp.i
+.PHONY : src/arduino_ekf_response.cpp.i
+
+src/arduino_ekf_response.s: src/arduino_ekf_response.cpp.s
+.PHONY : src/arduino_ekf_response.s
+
+# target to generate assembly for a file
+src/arduino_ekf_response.cpp.s:
+	cd /home/mrdeeppurple/catkin_ws/build && $(MAKE) -f arduino_nav_bridge/CMakeFiles/arduino_ekf_response_node.dir/build.make arduino_nav_bridge/CMakeFiles/arduino_ekf_response_node.dir/src/arduino_ekf_response.cpp.s
+.PHONY : src/arduino_ekf_response.cpp.s
+
 src/cserial.o: src/cserial.cpp.o
 .PHONY : src/cserial.o
 
 # target to build an object file
 src/cserial.cpp.o:
+	cd /home/mrdeeppurple/catkin_ws/build && $(MAKE) -f arduino_nav_bridge/CMakeFiles/arduino_ekf_response_node.dir/build.make arduino_nav_bridge/CMakeFiles/arduino_ekf_response_node.dir/src/cserial.cpp.o
 	cd /home/mrdeeppurple/catkin_ws/build && $(MAKE) -f arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/build.make arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/cserial.cpp.o
 .PHONY : src/cserial.cpp.o
 
@@ -452,6 +491,7 @@ src/cserial.i: src/cserial.cpp.i
 
 # target to preprocess a source file
 src/cserial.cpp.i:
+	cd /home/mrdeeppurple/catkin_ws/build && $(MAKE) -f arduino_nav_bridge/CMakeFiles/arduino_ekf_response_node.dir/build.make arduino_nav_bridge/CMakeFiles/arduino_ekf_response_node.dir/src/cserial.cpp.i
 	cd /home/mrdeeppurple/catkin_ws/build && $(MAKE) -f arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/build.make arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/cserial.cpp.i
 .PHONY : src/cserial.cpp.i
 
@@ -460,6 +500,7 @@ src/cserial.s: src/cserial.cpp.s
 
 # target to generate assembly for a file
 src/cserial.cpp.s:
+	cd /home/mrdeeppurple/catkin_ws/build && $(MAKE) -f arduino_nav_bridge/CMakeFiles/arduino_ekf_response_node.dir/build.make arduino_nav_bridge/CMakeFiles/arduino_ekf_response_node.dir/src/cserial.cpp.s
 	cd /home/mrdeeppurple/catkin_ws/build && $(MAKE) -f arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/build.make arduino_nav_bridge/CMakeFiles/arduino_nav_bridge_node.dir/src/cserial.cpp.s
 .PHONY : src/cserial.cpp.s
 
@@ -472,6 +513,7 @@ help:
 	@echo "... actionlib_msgs_generate_messages_cpp"
 	@echo "... actionlib_msgs_generate_messages_lisp"
 	@echo "... actionlib_msgs_generate_messages_py"
+	@echo "... arduino_ekf_response_node"
 	@echo "... arduino_nav_bridge_node"
 	@echo "... edit_cache"
 	@echo "... geometry_msgs_generate_messages_cpp"
@@ -498,6 +540,9 @@ help:
 	@echo "... src/arduino_com_node_imu.o"
 	@echo "... src/arduino_com_node_imu.i"
 	@echo "... src/arduino_com_node_imu.s"
+	@echo "... src/arduino_ekf_response.o"
+	@echo "... src/arduino_ekf_response.i"
+	@echo "... src/arduino_ekf_response.s"
 	@echo "... src/cserial.o"
 	@echo "... src/cserial.i"
 	@echo "... src/cserial.s"

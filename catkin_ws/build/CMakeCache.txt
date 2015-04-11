@@ -255,6 +255,12 @@ _CATKIN_GTEST_SRC:FILEPATH=/usr/src/gtest/src/gtest.cc
 actionlib_msgs_DIR:PATH=/opt/ros/indigo/share/actionlib_msgs/cmake
 
 //Value Computed by CMake
+arduino_ekf_response_BINARY_DIR:STATIC=/home/mrdeeppurple/catkin_ws/build/arduino_ekf_response
+
+//Value Computed by CMake
+arduino_ekf_response_SOURCE_DIR:STATIC=/home/mrdeeppurple/catkin_ws/src/arduino_ekf_response
+
+//Value Computed by CMake
 arduino_nav_bridge_BINARY_DIR:STATIC=/home/mrdeeppurple/catkin_ws/build/arduino_nav_bridge
 
 //Value Computed by CMake
