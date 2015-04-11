@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component name="dataSourceStorage">
+  <data-source source="LOCAL" name="SQLite - Mars" uuid="795eb916-07e4-4b72-b988-6539fb05a0a4">
+    <database-info product="SQLite" version="3.6.3" jdbc-version="2.1" driver-name="SQLiteJDBC" driver-version="native"/>
+    <case-sensitivity plain-identifiers="mixed" quoted-identifiers="mixed"/>
+    <schema name="" catalog=""/>
+    <table name="MODELS" schema="" catalog="" type="TABLE">
+      <column name="id" sqlType="INTEGER" precision="2000000000" scale="10" nullable="false" jdbcType="12"/>
+      <column name="name" sqlType="TEXT" precision="2000000000" scale="10" nullable="true" jdbcType="12"/>
+      <column name="value" sqlType="INTEGER" precision="2000000000" scale="10" nullable="true" jdbcType="12"/>
+      <primary-key columns="id"/>
+    </table>
+    <table name="PIPPO" schema="" catalog="" type="TABLE">
+      <column name="column_1" sqlType="INT" precision="2000000000" scale="10" nullable="false" jdbcType="12"/>
+      <column name="column_2" sqlType="INT" precision="2000000000" scale="10" nullable="false" jdbcType="12"/>
+      <primary-key columns="column_1"/>
+    </table>
+  </data-source>
+</component>
