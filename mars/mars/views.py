@@ -1,4 +1,4 @@
-from pyramid.response import Response
+from pyramid.response import Response, FileResponse
 from pyramid.view import view_config
 
 from sqlalchemy.exc import DBAPIError
@@ -25,42 +25,74 @@ Vars['progress'] = 0
 
 @view_config(route_name='rover_start', renderer='json')
 def rover_start_view(request):
+    print('rover_start')
     Vars['progress'] = 0
-    return {'ok': True, 'project': 'mars'}
+    return {'ok': 1, 'project': 'mars'}
 
 @view_config(route_name='rover_status', renderer='json')
 def rover_status_view(request):
+    print('rover_status')
     if Vars['progress'] < 99:
         Vars['progress'] += 1
-        return {'ok': True, 'status': 'stabdby', 'progress': Vars['progress'] }
+        return {'ok': 1, 'status': 'stabdby', 'progress': Vars['progress'] }
     else:
         Vars['progress'] += 1
-        return {'ok': True, 'status': 'completed', 'progress': Vars['progress'] }
+        return {'ok': 1, 'status': 'completed', 'progress': Vars['progress'] }
 
-@view_config(route_name='rasp', renderer='json')
-def rasp_view(request):
+@view_config(route_name='rover_position', renderer='json')
+def rover_position_view(request):
+    print('rover_position')
+    Vars['progress'] = 0
+    return {'ok': 1, 'x': 12.156556, 'y': 19.566556}
+
+@view_config(route_name='rover_photo', renderer='json')
+def rover_photo_view(request):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_address = ('192.168.0.105', 10000)
     print('connecting to %s port %s' % server_address, file=sys.stderr)
     sock.connect(server_address)
     datiz = []
+    pacchetto = 2048
     try:
-        message = 'This is the message.  It will be repeated. E quando arriva vabbenen'
+        message = 'foto'
         print('sending "%s"' % message, file=sys.stderr)
         sock.sendall(message.encode())
-        amount_received = 0
+        amount_received = pacchetto
         amount_expected = len(message)
-        while amount_received < amount_expected:
-            data = sock.recv(16)
-            amount_received += len(data)
-            datiz.append(str(data))
-            print('received "%s"' % data, file=sys.stderr)
+        while amount_received == pacchetto:
+            data = sock.recv(pacchetto)
+            amount_received = len(data)
+            datiz.append(data)
+            print('received %d' % len(data), file=sys.stderr)
 
     finally:
         print('closing socket', file=sys.stderr)
         sock.close()
+    f = open('fotina.jpg','wb')
+    datix = b''.join(datiz)
+    f.write(datix)
+    f.close()
 
-    return {'ok': True, 'data': "ricevuti"}
+    # here = os.path.dirname(__file__)
+    # filepath = os.path.join(here, 'swf', filename+".swf")
+    return FileResponse('fotina.jpg', request=request, content_type='image/jpeg')
+
+
+@view_config(route_name='rover_obstacles', renderer='json')
+def rover_obstacles_view(request):
+    return FileResponse('obstacles.png', request=request, content_type='image/png')
+
+
+@view_config(route_name='rover_path', renderer='json')
+def rover_path_view(request):
+    print('rover_path')
+    return {'ok': 1, 'data': 'all', 'more': 'data'}
+
+
+@view_config(route_name='rover_go', renderer='json')
+def rover_path_view(request):
+    print('rover_go')
+    return {'ok': 1, 'data': 'all', 'more': 'data'}
 
 
 conn_err_msg = """\

@@ -15,6 +15,10 @@ sock.bind(server_address)
 # Listen for incoming connections
 sock.listen(1)
 i=0
+pygame.camera.init()
+pygame.camera.list_cameras()
+cam = pygame.camera.Camera("/dev/video0",(640,480))
+cam.start()
 while True:
     # Wait for a connection
     print >>sys.stderr, 'waiting for a connection'
@@ -28,16 +32,22 @@ while True:
             print >>sys.stderr, 'received "%s"' % data
             if data == "foto":
                 i += 1
-                pygame.camera.init()
-                pygame.camera.list_cameras()
-                cam = pygame.camera.Camera("/dev/video0",(640,480))
-                cam.start()
                 img = cam.get_image()
-                filename = "filename%d.jpg" % i
+                filename = "foto.jpg"
                 pygame.image.save(img,filename)
+                # dirt_bytes = pygame.image.tostring(img, 'RGBX', False)
+                dirt_bytes = ""
+                f = open("foto.jpg", "rb")
+                try:
+                    dirt_bytes = f.read()
+                    # while byte != "":
+                    #     # Do stuff with byte.
+                    #     byte = f.read(1)
+                finally:
+                    f.close()
 
                 print >>sys.stderr, 'sending data back to the client'
-                connection.sendall(filename)
+                connection.sendall(dirt_bytes)
             elif data:
                 print >>sys.stderr, 'sending data back to the client'
                 connection.sendall(data)
