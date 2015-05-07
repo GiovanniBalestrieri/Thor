@@ -1,37 +1,36 @@
 #include <iostream>
-#include "cserial.h"
+#include <unistd.h>
+#include "hlserial_cpp.h"
 
 int main()
 {
-	cserial serial;
-	if(serial.connect("/dev/ttyACM1", 57600) < 0)
+	Serial serial;
+	if(serial.connect("/dev/ttyACM0", 57600, SYNC_SEQ, BLK_READ) < 0)
 	{
 		std::cout << "Errore inizializzazione serial\n";
 		return -1;
 	}
 	int i = 0;
-	while(i < 600)
+	serial.flush_io();
+	while(i < 10)
 	{
 		std::cout << "reading...\n";
-		char * buff = (char *) malloc(56*sizeof(char));
-		if(buff == NULL)
-		{
-			std::cout << "Errore di allocazione";
-			return -1;
-		}
-		int a = serial.serial_read(buff, 56);
+		char * buff = NULL;
+		int a = serial.serial_read(&buff, READ_ALL);
 		if(a == 0)
 		{
 			std::cout << "Ricevuto\n";
-			for(int j = 0; j< 55; j++)
+			for(int j = 0; j< 58; j++)
 			{
-				std::cout << (int)buff[j];	
+				std::cout << (char)buff[j];	
 			}
 			std::cout << "\n";
 		}
 		else{
 			std::cout << "Non ricevuto\n";
 		}
+		
+		serial.flush_io();
 		free(buff);
 		i++;
 	}

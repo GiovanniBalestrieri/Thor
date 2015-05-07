@@ -1,10 +1,10 @@
 #include <iostream>
-#include "cserial.h"
+#include "hlserial_cpp.h"
 
 int main()
 {
-	cserial serial;
-	if(serial.connect("/dev/ttyACM0", 57600) < 0)
+	Serial serial;
+	if(serial.connect("/dev/ttyACM1", 57600, SYNC_SEQ) < 0)
 	{
 		std::cout << "Errore inizializzazione serial\n";
 		return -1;
@@ -19,7 +19,7 @@ int main()
 			std::cout << "Errore di allocazione";
 			return -1;
 		}
-		int a = serial.serial_read(buff, 56);
+		int a = serial.serial_read(&buff, READ_ALL);
 		if(a == 0)
 		{
 			std::cout << "Ricevuto\n";

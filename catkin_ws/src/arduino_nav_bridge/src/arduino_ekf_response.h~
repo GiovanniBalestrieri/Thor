@@ -6,6 +6,6 @@
 #include <geometry_msgs/Pose.h>
 #include "cserial.h"
 
-void received_ekf_callback(const geometry_msgs::PoseWithCovarianceStamped)
+void received_ekf_callback(const geometry_msgs::PoseWithCovarianceStamped);
 
 #endif

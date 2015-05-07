@@ -32,7 +32,7 @@
 
 #define IMUXOFFSET 0.23
 #define IMUYOFFSET 0.06
-#define IMUZOFFSET 0
+#define IMUZOFFSET 0.0
 
 #define ODOMXOFFSET 0
 #define ODOMYOFFSET 0

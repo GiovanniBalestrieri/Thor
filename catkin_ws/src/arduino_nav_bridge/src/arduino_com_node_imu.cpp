@@ -44,13 +44,15 @@ int main(int argc, char **argv)
         );
 	
 	/**** COMUNICAZIONE SERIALE ****/
-	char * serialport = "/dev/ttyACM1";
-	cserial serial;
-	if(serial.connect(serialport, 57600) < 0)
+	char * serialport = "/dev/ttyACM0";
+	Serial serial;
+	if(serial.connect(serialport, 57600, SYNC_SEQ, BLK_READ) < 0)
 	{
 		return 1;
 	}
+	serial.set_polling_t(1000*50);
 	int actualsequencenumber = 0;
+
 	while(1)
 	{
 		/* protocollo di lettura: 
@@ -65,12 +67,13 @@ int main(int argc, char **argv)
 		{
 			return 1;
 		}
-		if(serial.serial_read(cmd, 56) < 0) 
+		if(serial.serial_read(&cmd, 56) < 0) 
 		{
 			actualsequencenumber = (actualsequencenumber+1)%256;
 			r.sleep();
 			continue;
 		}
+		serial.flush_io();
 		/* parsing comando */
 		int sequence_number = (int)cmd[SEQNO_OFF];
 		char sensor_id = cmd[SENSORID_OFF];
@@ -103,6 +106,7 @@ int main(int argc, char **argv)
 			 offset += VEC3_SIZE*sizeof(float);
 			 memcpy(lin_acc, (data+offset), VEC3_SIZE*sizeof(float));
 			 offset += VEC3_SIZE*sizeof(float);
+			 
 			 
 			 /* invio */
 			 imu_quat(quaternion);

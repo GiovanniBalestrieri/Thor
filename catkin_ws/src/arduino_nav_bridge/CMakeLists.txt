@@ -106,11 +106,11 @@ include_directories(
 # )
 
 ## Declare a cpp executable
-add_executable(arduino_nav_bridge_node src/arduino_com_node_imu.cpp src/cserial.cpp)
+add_executable(arduino_nav_bridge_node src/arduino_com_node_imu.cpp src/hlserial_cpp.cpp)
 add_dependencies(arduino_nav_bridge_node arduino_nav_bridge_generate_messages_cpp)
 target_link_libraries(arduino_nav_bridge_node ${catkin_LIBRARIES} )
 
-add_executable(arduino_ekf_response_node src/arduino_ekf_response.cpp src/cserial.cpp)
+add_executable(arduino_ekf_response_node src/arduino_ekf_response.cpp src/hlserial_cpp.cpp)
 target_link_libraries(arduino_ekf_response_node ${catkin_LIBRARIES})
 add_dependencies(arduino_ekf_response_node arduino_ekf_response_node_generate_messages_cpp)
 
