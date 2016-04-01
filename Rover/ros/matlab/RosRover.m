@@ -6,12 +6,24 @@ rosinit('http://160.80.97.150:11311', 'NodeHost', '160.80.97.241')
 rostopic list
 
 % Echo for /scan topic
-laser = rossubscriber('/scan')
+laser = rossubscriber('/scan', rostype.sensor_msgs_LaserScan)
+
+
+odom = rossubscriber('/odom')
+
 
 % Receive Scan data
-scandata = receive(laser,10)
+scandata = receive(laser,3)
 
 % Error using robotics.ros.Subscriber/receive
 % (line 291)
 % The function did not receive any data and timed
 % out.
+
+rosnode list
+rosnode ping /twist_to_motors
+
+setenv('ROS_MASTER_URI','http://160.80.97.150:11311')
+setenv('ROS_IP','160.80.97.241')
+rosinit
+rosshutdown
